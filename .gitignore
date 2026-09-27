@@ -1,0 +1,92 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python bytecode, test, and tool caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Python environments
+.venv/
+venv/
+env/
+.pixi/
+.python-version
+
+# ROS 2 / colcon generated output
+build/
+install/
+log/
+
+# CMake and compiled artifacts outside the colcon tree
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+*.o
+*.so
+*.dylib
+
+# IDE and editor state
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Credentials and local-only overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+secrets/
+config/local/
+config/**/*.local.*
+config/**/secrets.*
+*.local.yaml
+*.local.yml
+
+# Local database state
+.postgres/
+postgres-data/
+database/local/
+data/database/
+
+# Raw or local datasets
+data/raw/
+datasets/raw/
+datasets/local/
+
+# rosbag and raw sensor recordings
+bags/
+rosbags/
+recordings/
+*.bag
+*.db3
+*.mcap
+
+# Private/local model material only. Do not ignore models/ as a whole: selected
+# safe metadata or small publishable artifacts may intentionally be versioned.
+models/private/
+models/local/
+models/cache/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Common local ML/download caches
+.cache/
+wandb/
+runs/
