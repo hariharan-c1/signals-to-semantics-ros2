@@ -44,6 +44,40 @@ Passing this documentation gate is not implementation evidence. `EgoState v1` mu
 remain **Approved / not yet implemented** until the `.msg` file is generated, built,
 and tested across C++ and Python.
 
+## M1.3B cross-language communication design
+
+**Decision status:** **Approved / not yet implemented**
+
+M1.3B fixes the following design for the M1 contract-verification exchange:
+
+| Contract item | Approved value |
+| --- | --- |
+| Direction | C++ publisher → Python subscriber |
+| C++ package | `sts_contract_publisher_cpp` |
+| C++ executable/node purpose | Publish the canonical `sts_interfaces/EgoState` test payload. |
+| Python package | `sts_contract_subscriber_py` |
+| Python node purpose | Subscribe to `/sts/ego/state` and validate the canonical payload. |
+| Topic | `/sts/ego/state` |
+| Message type | `sts_interfaces/EgoState` |
+| QoS | Reliable, Keep Last, depth 10, Volatile |
+| Publication period | 1 second for the M1 manual demonstration |
+
+The canonical payload remains:
+
+```ini
+frame_id = "base_link"
+longitudinal_velocity_mps = 13.5
+longitudinal_acceleration_mps2 = -2.25
+longitudinal_jerk_mps3 = -4.0
+velocity_valid = true
+acceleration_valid = true
+jerk_valid = true
+```
+
+These packages are M1 contract-verification support components only. They are not
+the future production `sts_ego_state_cpp` implementation. M1.3B includes no
+odometry processing, kinematic derivation, TF2 integration, or scenario logic.
+
 ## Required deliverables
 
 - Documented ROS 2 Jazzy environment assumptions for the supported build host.
@@ -55,10 +89,9 @@ and tested across C++ and Python.
 - A CI workflow that builds and runs the v0.1 test scope.
 - Updated status documentation that reports only verified behavior as implemented.
 
-Final package and executable names beyond `sts_interfaces` and message direction
-remain decisions for the M1 implementation step. The `EgoState v1` schema, topic,
-semantics, and QoS are no longer open decisions and must match the approved
-contracts.
+The M1.3B package names, node roles, message direction, publication period,
+`EgoState v1` schema, topic, semantics, and QoS are approved decisions and must
+match the recorded contracts during implementation.
 
 ## Acceptance criteria
 
