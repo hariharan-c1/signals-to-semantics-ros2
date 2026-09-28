@@ -1,8 +1,9 @@
 # ROS Interface Specification
 
-**Status:** Planned interface catalogue; wire schemas are not yet approved or
-implemented.  
-**Current milestone:** v0.1 will define and validate the first custom message.
+**Status:** Interface catalogue; `EgoState v1` is **Approved / not yet
+implemented**. Other wire schemas are not yet approved or implemented.
+**Current milestone:** v0.1 has selected the first custom message and must still
+generate, build, and test it across C++ and Python.
 
 This document records the interfaces named by the approved architecture without
 inventing fields, units, or validity rules that have not yet been designed. Before
@@ -41,7 +42,7 @@ fit.
 
 | Interface | Scenario-specific purpose | Status |
 | --- | --- | --- |
-| `EgoState` | Normalized ego state for downstream processing | Planned; schema not approved |
+| `EgoState` | Normalized ego state for downstream processing | **Approved / not yet implemented** (v1) |
 | `ActorState` | One normalized tracked or ground-truth actor state | Planned; schema not approved |
 | `ActorStateArray` | Common actor-provider boundary | Planned; schema not approved |
 | `ActorRisk` | Risk quantities for one actor | Planned; schema not approved |
@@ -52,15 +53,84 @@ fit.
 | `RankedActorArray` | Top-K/ranked actor collection | Planned; schema not approved |
 | `ScenarioSemantic` | Constrained semantic enrichment result | Planned; schema not approved |
 
-The “first custom message” required by v0.1 has not been selected by the approved
-architecture. M1 must select it and approve its complete contract before generating
-the interface package. No field layout is implied by the names above.
+`EgoState v1` is the first custom message selected for v0.1. Its approved contract
+is frozen below. No field layout is implied for any of the other names above.
+
+## EgoState v1 approved contract
+
+**Status:** **Approved / not yet implemented**. This status remains in effect until
+the `.msg` file is generated, the workspace builds it successfully, and the
+cross-language contract is tested.
+
+| Contract item | Approved value |
+| --- | --- |
+| Topic | `/sts/ego/state` |
+| Message type | `sts_interfaces/EgoState` |
+| Contract version | `EgoState v1` |
+| Timestamp | `header.stamp` is the measurement/source timestamp. For the M1 synthetic publisher, it may be the ROS clock time at sample creation. |
+| Frame | `header.frame_id` is `base_link`. |
+| QoS | Reliable, Keep Last, depth 10, Volatile; see [`QOS.md`](QOS.md). |
+
+Approved message schema:
+
+```text
+std_msgs/Header header
+
+float64 longitudinal_velocity_mps
+float64 longitudinal_acceleration_mps2
+float64 longitudinal_jerk_mps3
+
+bool velocity_valid
+bool acceleration_valid
+bool jerk_valid
+```
+
+Approved field semantics:
+
+- The longitudinal direction is the ego vehicle X axis; positive is forward.
+- `longitudinal_velocity_mps` is a signed scalar velocity in metres per second.
+- `longitudinal_acceleration_mps2` is signed acceleration in metres per second
+  squared. Negative values represent deceleration along the longitudinal axis.
+- `longitudinal_jerk_mps3` is signed jerk in metres per second cubed.
+- Each validity flag applies to its corresponding numeric field. A numeric field
+  whose validity flag is `false` must not be interpreted by consumers.
+- Producers use `0.0` for an invalid or unavailable numeric field as a transport
+  placeholder only. The corresponding validity flag, not the placeholder value,
+  determines whether the quantity has semantic meaning.
+
+For M1, the producer must populate the approved header, numeric fields, and validity
+flags without changing their meanings. The consumer must preserve and verify those
+values across ROS serialization and must obey the validity rules. Either language
+may fill the producer or consumer role; the contract is identical for `rclcpp` and
+`rclpy`.
+
+Canonical cross-language M1 test payload:
+
+```ini
+frame_id = "base_link"
+longitudinal_velocity_mps = 13.5
+longitudinal_acceleration_mps2 = -2.25
+longitudinal_jerk_mps3 = -4.0
+velocity_valid = true
+acceleration_valid = true
+jerk_valid = true
+```
+
+The fixture does not freeze a numeric `header.stamp`; the test must set and verify a
+source timestamp consistent with the timestamp contract above.
+
+`EgoState v1` intentionally does not contain pose, yaw, yaw rate, lateral velocity,
+or 3D velocity. Those quantities are not required by this first
+scenario-intelligence contract, and generic pose and twist information already has
+standard ROS message representations. The v1 field names, order, types, units, and
+semantics are frozen for M1. A change requires explicit contract review and matching
+test updates; it must not be made silently in a producer or consumer.
 
 ## Planned Signals-to-Semantics topics
 
 | Topic | Intended payload | Status |
 | --- | --- | --- |
-| `/sts/ego/state` | `EgoState` | Planned |
+| `/sts/ego/state` | `sts_interfaces/EgoState` | **Approved / not yet implemented** (v1) |
 | `/sts/actors/tracked` | `ActorStateArray` | Planned |
 | `/sts/risk/actors` | `ActorRiskArray` | Planned |
 | `/sts/events/braking` | `BrakeEvent` | Planned |

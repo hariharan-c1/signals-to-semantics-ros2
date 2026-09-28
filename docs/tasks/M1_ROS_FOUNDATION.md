@@ -26,12 +26,23 @@ M1 is limited to:
 
 ## Design gate: first custom message
 
-The approved architecture names several planned custom messages but does not choose
-the first one or specify its fields. Before package generation, M1 must select one
-message and approve its complete contract in
-[`../ROS_INTERFACE_SPEC.md`](../ROS_INTERFACE_SPEC.md), including field meanings,
-types, units, timestamp and frame behavior, validity rules, and cross-language test
-examples. Implementation must not guess this schema.
+**Decision:** The interface-contract selection gate has passed. `EgoState v1` is the
+first approved custom message for M1.
+
+- Topic: `/sts/ego/state`
+- Message type: `sts_interfaces/EgoState`
+- Contract status: **Approved / not yet implemented**
+- QoS: Reliable, Keep Last, depth 10, Volatile
+
+The complete frozen schema, field meanings, types, units, timestamp and frame
+behavior, validity rules, exclusions, and canonical cross-language test payload are
+recorded in [`../ROS_INTERFACE_SPEC.md`](../ROS_INTERFACE_SPEC.md). The QoS contract
+is also recorded in [`../QOS.md`](../QOS.md). Package generation and implementation
+must use these approved contracts without guessing or silently changing them.
+
+Passing this documentation gate is not implementation evidence. `EgoState v1` must
+remain **Approved / not yet implemented** until the `.msg` file is generated, built,
+and tested across C++ and Python.
 
 ## Required deliverables
 
@@ -44,9 +55,10 @@ examples. Implementation must not guess this schema.
 - A CI workflow that builds and runs the v0.1 test scope.
 - Updated status documentation that reports only verified behavior as implemented.
 
-Final package and executable names beyond `sts_interfaces`, message direction, and
-the message schema are decisions for the M1 design/specification step; they are not
-pre-approved by this task.
+Final package and executable names beyond `sts_interfaces` and message direction
+remain decisions for the M1 implementation step. The `EgoState v1` schema, topic,
+semantics, and QoS are no longer open decisions and must match the approved
+contracts.
 
 ## Acceptance criteria
 
