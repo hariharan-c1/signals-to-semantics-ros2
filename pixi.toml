@@ -1,0 +1,12 @@
+[workspace]
+authors = ["Hariharan Chandrasekaran"]
+channels = ["https://prefix.dev/robostack-jazzy"]
+name = "signals-to-semantics-ros2"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+ros-jazzy-desktop = ">=0.11.0,<0.12"
+ros-dev-tools = ">=1.0.3,<2"
