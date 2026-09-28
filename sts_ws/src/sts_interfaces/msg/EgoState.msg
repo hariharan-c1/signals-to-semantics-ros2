@@ -1,0 +1,9 @@
+std_msgs/Header header
+
+float64 longitudinal_velocity_mps
+float64 longitudinal_acceleration_mps2
+float64 longitudinal_jerk_mps3
+
+bool velocity_valid
+bool acceleration_valid
+bool jerk_valid
