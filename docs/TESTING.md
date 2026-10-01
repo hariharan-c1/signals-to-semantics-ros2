@@ -1,7 +1,8 @@
 # Testing Strategy
 
-**Status:** Test architecture planned; v0.1 basic tests and CI baseline are In
-Progress. No runtime test suite exists yet.
+**Status:** M1.3B is Implemented and runtime verified on macOS, with package checks
+and a manual cross-language runtime check. M1.4 automated integration testing and
+Linux CI are Approved / not yet implemented; v0.1 remains In Progress.
 
 ## Acceptance philosophy
 
@@ -46,6 +47,36 @@ The current milestone is limited to:
 Risk equations, TF2, rosbag regression, perception, CARLA, ML, database, and
 end-to-end semantic tests belong to later milestones.
 
+## M1.3B verification evidence
+
+The accepted M1.3B verification built all three foundation packages. Package checks
+reported 17 tests, 0 errors, 0 failures, and 1 tooling skip. The Python tests cover
+canonical payload acceptance and incorrect-field rejection. A separate manual
+runtime check of the C++ publisher and Python subscriber produced repeated
+`PASS canonical EgoState payload` logs. See
+[`engineering-notes/M1_ROS2_FOUNDATION.md`](engineering-notes/M1_ROS2_FOUNDATION.md)
+for the evidence and its limits. This verification did not establish automated
+cross-process testing or Linux compatibility.
+
+## M1.4 approved integration-test design
+
+**Status:** **Approved / not yet implemented**
+
+Use ROS 2 Jazzy `launch_pytest` to launch the actual installed
+`sts_contract_publisher_cpp/ego_state_test_publisher` C++ executable and
+`sts_contract_subscriber_py/ego_state_test_subscriber` Python executable from the
+built workspace. The harness must observe `PASS canonical EgoState payload` in the
+subscriber process output within an explicit, bounded timeout. Absence of that PASS
+must fail the test; successful startup or exit is insufficient.
+
+The test uses the existing `/sts/ego/state` topic, `sts_interfaces/EgoState` message,
+and Reliable, Keep Last, depth 10, Volatile QoS contract. The Python subscriber
+remains responsible for field-level canonical validation, including its existing
+frame, timestamp, numeric-field, and validity-flag checks. The harness checks the
+subscriber's PASS output without unnecessarily duplicating payload validation.
+The full approved design is in
+[`tasks/M1_ROS_FOUNDATION.md`](tasks/M1_ROS_FOUNDATION.md).
+
 ## Future contract-focused checks
 
 - Frame and timestamp correctness, including missing or stale transforms.
@@ -59,6 +90,18 @@ end-to-end semantic tests belong to later milestones.
 - GT/perception equivalence at the normalized actor boundary.
 
 ## CI evolution
+
+The approved M1.4 baseline adds Linux CI using GitHub Actions. Implementation must
+retain `osx-arm64` and add `linux-64` in Pixi, update the tracked `pixi.lock` for both
+platforms, and use that repository lockfile in CI without re-resolving dependencies.
+CI must build the ROS workspace, activate its installed overlay, run package tests,
+and run the `launch_pytest` integration test. Build and test failures, including a
+missing subscriber PASS within the bounded timeout, must fail CI.
+
+This baseline uses no CARLA, Docker, GPU perception, or S2-S7. It is a
+ROS-foundation portability/regression check, not proof of production Linux/CARLA
+compatibility. The workflow, automated integration test, Pixi platform addition,
+and lockfile update remain unimplemented by this documentation change.
 
 CI is planned to grow from v0.1 build and basic tests toward formatting, C++ checks,
 Python checks, workspace builds, unit tests, integration smoke tests,

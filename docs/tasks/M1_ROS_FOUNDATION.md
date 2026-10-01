@@ -31,7 +31,7 @@ first approved custom message for M1.
 
 - Topic: `/sts/ego/state`
 - Message type: `sts_interfaces/EgoState`
-- Contract status: **Approved / not yet implemented**
+- Contract status: **Implemented and runtime verified in M1.3B**
 - QoS: Reliable, Keep Last, depth 10, Volatile
 
 The complete frozen schema, field meanings, types, units, timestamp and frame
@@ -40,13 +40,15 @@ recorded in [`../ROS_INTERFACE_SPEC.md`](../ROS_INTERFACE_SPEC.md). The QoS cont
 is also recorded in [`../QOS.md`](../QOS.md). Package generation and implementation
 must use these approved contracts without guessing or silently changing them.
 
-Passing this documentation gate is not implementation evidence. `EgoState v1` must
-remain **Approved / not yet implemented** until the `.msg` file is generated, built,
-and tested across C++ and Python.
+The `.msg` file has been generated and built, and C++ to Python communication has
+been runtime verified in M1.3B. Accepted evidence is recorded in
+[`../engineering-notes/M1_ROS2_FOUNDATION.md`](../engineering-notes/M1_ROS2_FOUNDATION.md).
+The interface and QoS documents retain earlier implementation-status labels;
+their approved contracts remain unchanged.
 
 ## M1.3B cross-language communication design
 
-**Decision status:** **Approved / not yet implemented**
+**Status:** **Implemented and runtime verified**
 
 M1.3B fixes the following design for the M1 contract-verification exchange:
 
@@ -77,6 +79,57 @@ jerk_valid = true
 These packages are M1 contract-verification support components only. They are not
 the future production `sts_ego_state_cpp` implementation. M1.3B includes no
 odometry processing, kinematic derivation, TF2 integration, or scenario logic.
+
+All three M1 packages built, and package checks reported 17 tests, 0 errors,
+0 failures, and 1 tooling skip. The manual runtime check produced repeated Python
+subscriber `PASS canonical EgoState payload` logs. This accepted macOS evidence is
+recorded in the linked engineering reference; automated cross-process integration
+testing and Linux CI remain to be implemented in M1.4.
+
+## M1.4 automated integration test and Linux CI design
+
+**Decision status:** **Approved / not yet implemented**
+
+M1.4 adds an automated cross-language integration test using ROS 2 Jazzy
+`launch_pytest`. It must launch the actual installed executables from the built
+workspace:
+
+| Package | Installed executable | Role |
+| --- | --- | --- |
+| `sts_contract_publisher_cpp` | `ego_state_test_publisher` | Publish the canonical payload in C++. |
+| `sts_contract_subscriber_py` | `ego_state_test_subscriber` | Receive and validate the payload in Python. |
+
+The test succeeds only when output captured from the subscriber process contains
+`PASS canonical EgoState payload` within an explicit, bounded timeout. If that PASS
+is not observed before the timeout, the test must fail, including when either
+process cannot start, no message arrives, or received payloads fail validation.
+Process startup or clean exit alone cannot satisfy the test.
+
+The exchange must use the existing `/sts/ego/state`, `sts_interfaces/EgoState`, and
+Reliable, Keep Last, depth 10, Volatile QoS contract. Canonical field-level
+validation remains the Python subscriber's responsibility, including the existing
+frame, timestamp, numeric-field, and validity-flag checks. The integration harness
+observes the subscriber's PASS output and must not unnecessarily duplicate that
+validation logic or substitute mock processes for the installed executables.
+
+M1.4 also adds Linux CI using GitHub Actions. During implementation:
+
+- Retain `osx-arm64` in `pixi.toml` and add `linux-64`.
+- Update the repository `pixi.lock` to resolve both platforms. CI must use that
+  tracked lockfile without re-resolving dependencies during the run.
+- Build the ROS workspace in the locked Linux Pixi environment, activate the built
+  workspace overlay, run package tests, and run the automated integration test.
+- Propagate build, package-test, and integration-test failures to the CI result,
+  including failure to observe the required subscriber PASS within the timeout.
+
+CI uses no CARLA, Docker, GPU perception, or S2-S7. It is a ROS-foundation
+portability/regression check; passing it does not prove production Linux/CARLA
+compatibility.
+
+This records the approved design only. The integration test, test dependencies,
+GitHub Actions workflow, Pixi platform addition, and lockfile update remain
+unimplemented by this documentation change. The overall M1 milestone remains
+**In Progress**.
 
 ## Required deliverables
 
