@@ -8,6 +8,9 @@ design and engineering decisions.
 
 ## v0.1 — ROS 2 foundations
 
+Completed-work reference through M1.3B:
+[M1 ROS 2 Foundation engineering note](engineering-notes/M1_ROS2_FOUNDATION.md).
+
 - ROS 2 Jazzy concepts and environment structure.
 - colcon workspaces and package boundaries.
 - standard versus custom ROS interfaces.
