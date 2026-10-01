@@ -16,8 +16,6 @@ jobs:
       run:
         shell: bash
         working-directory: sts_ws
-    env:
-      ROS_LOG_DIR: ${{ runner.temp }}/sts_ros_logs
     steps:
       - uses: actions/checkout@v7
       - uses: prefix-dev/setup-pixi@v0.10.0
@@ -31,6 +29,8 @@ jobs:
           --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py
           --event-handlers console_direct+
       - name: Run all M1 tests including cross-language integration
+        env:
+          ROS_LOG_DIR: ${{ runner.temp }}/sts_ros_logs
         run: |
           pixi run --locked bash -c '
             set -e
