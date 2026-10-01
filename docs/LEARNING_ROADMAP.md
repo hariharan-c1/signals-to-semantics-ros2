@@ -1,12 +1,18 @@
 # Learning Roadmap
 
-**Status:** Planned learning sequence aligned with staged implementation.
+**Status:** M1 foundation learning complete; later milestone learning remains planned.
 
 The project is intended to demonstrate understanding as well as produce software.
 Implementation is not complete until the product owner understands the important
 design and engineering decisions.
 
 ## v0.1 — ROS 2 foundations
+
+**Learning status:** Complete through M1.4 and M1 closure, including installed-process
+integration testing, macOS workarounds, locked Ubuntu CI, and accepted results.
+
+Completed-work reference through M1 closure:
+[M1 ROS 2 Foundation engineering note](engineering-notes/M1_ROS2_FOUNDATION.md).
 
 - ROS 2 Jazzy concepts and environment structure.
 - colcon workspaces and package boundaries.
@@ -19,6 +25,8 @@ design and engineering decisions.
 
 ## v0.2-v0.4 — Deterministic streaming systems
 
+**Learning status:** Planned; v0.2 is next.
+
 - streaming velocity, acceleration, jerk, and rolling state.
 - explicit numerical validity and tolerance-based tests.
 - event detection and configurable scenario windows.
@@ -28,6 +36,8 @@ design and engineering decisions.
 - RViz2 as an engineering-debugging interface.
 
 ## v0.5-v0.6 — Perception and simulation
+
+**Learning status:** Planned.
 
 - `sensor_msgs/Image`, `CameraInfo`, and `PointCloud2`.
 - camera calibration and projection.
@@ -39,6 +49,8 @@ design and engineering decisions.
 
 ## v0.7-v0.8 — Research pipeline integration
 
+**Learning status:** Planned.
+
 - feature-contract mapping from `ScenarioWindow` to thesis inputs.
 - S2 actor representations and S3 GATv2 inference.
 - Top-K actor responsibility ranking.
@@ -47,6 +59,8 @@ design and engineering decisions.
 - asynchronous S5 reasoning, failure isolation, and latency measurement.
 
 ## v0.9-v1.0 — Knowledge platform and delivery
+
+**Learning status:** Planned.
 
 - PostgreSQL/pgvector scenario storage.
 - semantic retrieval and reranking.

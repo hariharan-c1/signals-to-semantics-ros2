@@ -1,0 +1,46 @@
+name: ROS 2 foundation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  m1-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: sts_ws
+    steps:
+      - uses: actions/checkout@v7
+      - uses: prefix-dev/setup-pixi@v0.10.0
+        with:
+          pixi-version: v0.81.0
+          locked: true
+          cache: true
+      - name: Build M1 workspace
+        run: >-
+          pixi run --locked colcon build
+          --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py
+          --event-handlers console_direct+
+      - name: Run all M1 tests including cross-language integration
+        env:
+          ROS_LOG_DIR: ${{ runner.temp }}/sts_ros_logs
+        run: |
+          pixi run --locked bash -c '
+            set -e
+            source install/setup.bash
+            colcon test \
+              --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py \
+              --event-handlers console_direct+ \
+              --return-code-on-test-failure \
+              --pytest-args -v
+          '
+      - name: Report test results
+        if: ${{ always() }}
+        run: pixi run --locked colcon test-result --verbose

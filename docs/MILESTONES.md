@@ -1,7 +1,8 @@
 # Milestones
 
 **Project status:** Active Development  
-**Current milestone:** v0.1 ROS 2 Foundation
+**Current milestone:** v0.1 ROS 2 Foundation — Implemented\
+**Next planned milestone:** v0.2 Streaming Vehicle Core
 
 The milestone states distinguish repository evidence from architectural intent.
 
@@ -16,26 +17,22 @@ no production source code, ROS packages, Docker files, checkpoints, or datasets.
 Acceptance criteria are defined in
 [`tasks/M0_REPO_FOUNDATION.md`](tasks/M0_REPO_FOUNDATION.md).
 
-## In Progress
-
 ### v0.1 — ROS 2 Foundation
 
-Scope is limited to:
-
-- ROS 2 Jazzy environment;
-- colcon workspace;
-- `sts_interfaces`;
-- first approved custom message;
-- C++ ROS node;
-- Python ROS node;
-- cross-language communication;
-- basic tests; and
-- CI baseline.
+Implemented and accepted: ROS 2 Jazzy environment, colcon workspace, the approved
+`EgoState v1` custom interface in `sts_interfaces`, C++ publisher in
+`sts_contract_publisher_cpp`, Python subscriber in `sts_contract_subscriber_py`,
+basic package tests, and an automated installed-process cross-language integration
+test. Local macOS build/runtime verification and GitHub Actions Ubuntu 24.04 CI
+passed. Linux CI reported **3 packages finished** and **23 tests, 0 errors,
+0 failures, 1 skipped** (the documented cppcheck tooling skip).
 
 The execution contract is
 [`tasks/M1_ROS_FOUNDATION.md`](tasks/M1_ROS_FOUNDATION.md).
 
 ## Planned
+
+v0.2 is the next planned milestone; implementation has not started.
 
 | Release | Outcome |
 | --- | --- |
