@@ -83,12 +83,15 @@ odometry processing, kinematic derivation, TF2 integration, or scenario logic.
 All three M1 packages built, and package checks reported 17 tests, 0 errors,
 0 failures, and 1 tooling skip. The manual runtime check produced repeated Python
 subscriber `PASS canonical EgoState payload` logs. This accepted macOS evidence is
-recorded in the linked engineering reference; automated cross-process integration
-testing and Linux CI remain to be implemented in M1.4.
+recorded in the linked engineering reference. M1.4 adds the automated
+cross-process integration test and Linux CI baseline described below.
 
 ## M1.4 automated integration test and Linux CI design
 
-**Decision status:** **Approved / not yet implemented**
+**Decision status:** **Approved**
+
+**Implementation status:** **In Progress** — integration test implemented and
+verified on macOS; Linux CI workflow implemented, awaiting a GitHub-hosted run.
 
 M1.4 adds an automated cross-language integration test using ROS 2 Jazzy
 `launch_pytest`. It must launch the actual installed executables from the built
@@ -112,7 +115,7 @@ frame, timestamp, numeric-field, and validity-flag checks. The integration harne
 observes the subscriber's PASS output and must not unnecessarily duplicate that
 validation logic or substitute mock processes for the installed executables.
 
-M1.4 also adds Linux CI using GitHub Actions. During implementation:
+M1.4 also adds Linux CI using GitHub Actions:
 
 - Retain `osx-arm64` in `pixi.toml` and add `linux-64`.
 - Update the repository `pixi.lock` to resolve both platforms. CI must use that
@@ -126,10 +129,31 @@ CI uses no CARLA, Docker, GPU perception, or S2-S7. It is a ROS-foundation
 portability/regression check; passing it does not prove production Linux/CARLA
 compatibility.
 
-This records the approved design only. The integration test, test dependencies,
-GitHub Actions workflow, Pixi platform addition, and lockfile update remain
-unimplemented by this documentation change. The overall M1 milestone remains
-**In Progress**.
+The integration test is implemented under the existing Python subscriber package
+as `test/test_ego_state_integration.py`. Its PASS deadline is 30 seconds, and each
+process has 2-second SIGTERM/SIGKILL escalation intervals during cleanup. It selects
+a shared test-only ROS domain and temporary node log directory. On macOS, test
+orchestration restores the installed `sts_interfaces` library path for the child
+processes because system shells can strip `DYLD_LIBRARY_PATH`. The Apple-only
+publisher linker workaround remains unchanged and platform guarded.
+
+Required test dependencies are `ament_index_python`, `launch`, `launch_pytest`,
+`launch_ros`, `python3-pytest`, and `sts_contract_publisher_cpp`. The Python package's
+`test` extra selects pytest for `colcon test`. Pixi explicitly includes
+`ros2-launch-pytest` and constrains pytest to `>=8.1,<9`: the installed Jazzy
+`launch_testing` plugin uses a hook removed in pytest 9.
+
+The workflow is `.github/workflows/ros2-ci.yml`: GitHub-hosted Ubuntu 24.04,
+`actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.0`, Pixi `v0.81.0`, locked
+installation, environment caching, and a 30-minute job timeout. It builds the three
+M1 packages, runs all package tests including the launch test with failure
+propagation, and always reports test results verbosely.
+
+Local macOS validation and reproducible commands are recorded in
+[`../TESTING.md`](../TESTING.md). Both Pixi platforms resolve in the regenerated
+lockfile, but no Linux build or runtime execution has been verified locally and
+the workflow has not yet run on GitHub. The overall M1 milestone remains
+**In Progress** pending Linux CI evidence and milestone acceptance.
 
 ## Required deliverables
 

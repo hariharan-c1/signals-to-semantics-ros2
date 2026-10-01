@@ -1,8 +1,9 @@
 # Testing Strategy
 
 **Status:** M1.3B is Implemented and runtime verified on macOS, with package checks
-and a manual cross-language runtime check. M1.4 automated integration testing and
-Linux CI are Approved / not yet implemented; v0.1 remains In Progress.
+and a manual cross-language runtime check. M1.4 automated integration testing is
+implemented and verified on macOS; the Linux CI workflow is implemented but has
+not yet run on GitHub. M1.4 and v0.1 remain In Progress pending Linux CI evidence.
 
 ## Acceptance philosophy
 
@@ -60,7 +61,7 @@ cross-process testing or Linux compatibility.
 
 ## M1.4 approved integration-test design
 
-**Status:** **Approved / not yet implemented**
+**Status:** **Implemented and verified on macOS**
 
 Use ROS 2 Jazzy `launch_pytest` to launch the actual installed
 `sts_contract_publisher_cpp/ego_state_test_publisher` C++ executable and
@@ -76,6 +77,60 @@ frame, timestamp, numeric-field, and validity-flag checks. The harness checks th
 subscriber's PASS output without unnecessarily duplicating payload validation.
 The full approved design is in
 [`tasks/M1_ROS_FOUNDATION.md`](tasks/M1_ROS_FOUNDATION.md).
+
+The implementation is
+[`test_ego_state_integration.py`](../sts_ws/src/sts_contract_subscriber_py/test/test_ego_state_integration.py).
+The PASS timeout is 30 seconds. The fixture uses a shared test-only ROS domain,
+temporary node logs, and bounded shutdown escalation. It captures the subscriber's
+stderr with ROS logging explicitly directed there. The macOS-only child-process
+library-path restoration uses the installed interface package prefix; Linux uses
+the normal workspace environment. No canonical field validation is copied into
+the harness.
+
+## M1.4 local validation
+
+On macOS arm64, using Pixi 0.81.0, `launch_pytest` 3.4.11, and pytest 8.4.2:
+
+- A fresh build of all three M1 packages succeeded in separate ignored output
+  directories.
+- Both canonical validation unit tests and all three Python lint checks passed.
+- The real installed C++/Python integration test passed. The Python suite reported
+  6 passed; the verbose colcon result summary reported 23 tests, 0 errors,
+  0 failures, and 1 skipped (the existing cppcheck tooling skip).
+- A temporary negative test copy suppressed the real subscriber's INFO logs and
+  shortened the wait to 3 seconds. It failed with the missing-PASS assertion and
+  exit code 1 after 3.27 seconds, and both real processes shut down. This temporary
+  validation did not add a repository test or replace either executable.
+- `pixi lock --check --offline` passed for the dual-platform lockfile. The Linux
+  resolution contains 752 packages and the macOS resolution 704; their references
+  were checked against lock records and platform/noarch URLs. This establishes
+  dependency resolution, not Linux installation or runtime behavior.
+
+Jazzy's installed `launch_testing` pytest plugin fails to load with pytest 9.
+Pixi therefore constrains pytest to `>=8.1,<9`. The package uses the supported
+setuptools `test` extra so colcon selects pytest and discovers the launch test.
+DDS validation required local network access
+outside the execution sandbox; launch logs used a writable temporary directory.
+
+Fresh-build validation commands, run from `sts_ws/`:
+
+```sh
+pixi install --locked
+pixi run --locked colcon --log-base log/m1_4 build --build-base build/m1_4 --install-base install/m1_4 --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py
+ROS_LOG_DIR=/tmp/sts_m1_4_ros_logs pixi run --locked bash -c 'set -e; source install/m1_4/setup.bash; colcon --log-base log/m1_4 test --build-base build/m1_4 --install-base install/m1_4 --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py --return-code-on-test-failure --pytest-args -v'
+pixi run --locked colcon test-result --test-result-base build/m1_4 --verbose
+pixi lock --check --offline
+```
+
+### Known tooling warning
+
+For M1, `launch_pytest` 3.4.11 on Python 3.12 emits
+`DeprecationWarning: There is no current event loop`. A diagnostic traceback
+identified `launch_pytest/fixture.py` calling `policy.get_event_loop()` before
+setting its newly created loop with `policy.set_event_loop(loop)`. The warning
+originates in the dependency stack, not project test code. Normal M1 integration
+execution passes. The warning is not suppressed or patched locally. Re-evaluate
+when the ROS Jazzy testing stack or Python version changes.
 
 ## Future contract-focused checks
 
@@ -101,7 +156,11 @@ missing subscriber PASS within the bounded timeout, must fail CI.
 This baseline uses no CARLA, Docker, GPU perception, or S2-S7. It is a
 ROS-foundation portability/regression check, not proof of production Linux/CARLA
 compatibility. The workflow, automated integration test, Pixi platform addition,
-and lockfile update remain unimplemented by this documentation change.
+and regenerated lockfile are implemented. The workflow uses GitHub-hosted Ubuntu
+24.04, `actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.0`, and Pixi `v0.81.0`.
+Locked installation and runs enforce the committed lockfile; caching is enabled.
+The job has a 30-minute timeout, and test results are reported verbosely even after
+failure. No GitHub-hosted Linux run has been verified yet.
 
 CI is planned to grow from v0.1 build and basic tests toward formatting, C++ checks,
 Python checks, workspace builds, unit tests, integration smoke tests,
