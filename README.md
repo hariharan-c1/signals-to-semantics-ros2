@@ -1,8 +1,9 @@
 # Signals-to-Semantics ROS 2
 
 **Status:** Active Development  
-**Current milestone:** v0.1 ROS 2 Foundation  
-**Implementation state:** Repository foundation only; no ROS packages or runtime functionality are implemented yet.
+**Current milestone:** v0.1 ROS 2 Foundation — Implemented\
+**Next planned milestone:** v0.2 Streaming Vehicle Core\
+**Implementation state:** Verified ROS 2 foundation with a custom interface and C++ → Python contract communication.
 
 Signals-to-Semantics ROS 2 is a systems extension of the Master's thesis project
 [Signals-to-Semantics](https://github.com/hariharan-c1/Signals_to_Semantics).
@@ -17,6 +18,9 @@ and enriches frozen scenario windows with the existing research pipeline. It is 
 a planner, controller, or complete autonomous-driving stack.
 
 ## Target system
+
+The following system is the planned architecture beyond the implemented M1
+contract-verification foundation.
 
 ```text
 Recorded AV data / CARLA
@@ -39,12 +43,20 @@ or immediate storage.
 
 | State | What it means here |
 | --- | --- |
-| **Implemented** | Approved architecture baseline and M0.1 repository documentation foundation |
-| **In Progress** | v0.1 ROS 2 Foundation: environment, workspace, interfaces, first C++ and Python nodes, cross-language communication, tests, and CI baseline |
+| **Implemented** | Approved architecture baseline, M0.1 repository documentation foundation, and v0.1 ROS 2 Foundation: Jazzy environment, colcon workspace, approved `EgoState v1` interface, C++ publisher, Python subscriber, tests, and Ubuntu CI |
 | **Planned** | Streaming vehicle core, risk intelligence, TF2 and replay, perception, CARLA, S2-S7 integration, diagnostics, Docker, and integrated evaluation |
 
-No entry in the planned architecture should be interpreted as working software.
-Package creation begins in v0.1 after its interface and task contracts are approved.
+The three implemented ROS packages are `sts_interfaces`,
+`sts_contract_publisher_cpp`, and `sts_contract_subscriber_py`. C++ → Python
+communication is automatically regression tested with `launch_pytest` and verified
+locally on macOS arm64 and in GitHub Actions on Ubuntu 24.04. Linux CI built all
+three packages and reported **23 tests, 0 errors, 0 failures, 1 skipped** (the
+documented cppcheck tooling skip). See the [M1 acceptance record](docs/tasks/M1_ROS_FOUNDATION.md).
+
+These nodes exchange and validate a synthetic canonical payload. Production ego
+kinematics, TF2 integration, perception, CARLA, GAT, LLM runtime, and risk
+intelligence remain planned. No entry in the planned architecture should be
+interpreted as working software.
 
 ## Development strategy
 

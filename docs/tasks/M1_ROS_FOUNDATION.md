@@ -1,6 +1,6 @@
 # M1 — ROS 2 Foundation
 
-**Status:** In Progress  
+**Status:** Implemented / Accepted\
 **Release:** v0.1 ROS 2 Foundation  
 **Architecture authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
@@ -31,7 +31,7 @@ first approved custom message for M1.
 
 - Topic: `/sts/ego/state`
 - Message type: `sts_interfaces/EgoState`
-- Contract status: **Implemented and runtime verified in M1.3B**
+- Contract status: **Implemented and cross-language verified on macOS and Ubuntu CI**
 - QoS: Reliable, Keep Last, depth 10, Volatile
 
 The complete frozen schema, field meanings, types, units, timestamp and frame
@@ -41,10 +41,10 @@ is also recorded in [`../QOS.md`](../QOS.md). Package generation and implementat
 must use these approved contracts without guessing or silently changing them.
 
 The `.msg` file has been generated and built, and C++ to Python communication has
-been runtime verified in M1.3B. Accepted evidence is recorded in
+been manually verified in M1.3B and automatically verified in M1.4 on macOS and
+Ubuntu 24.04 CI. Accepted evidence is recorded in
 [`../engineering-notes/M1_ROS2_FOUNDATION.md`](../engineering-notes/M1_ROS2_FOUNDATION.md).
-The interface and QoS documents retain earlier implementation-status labels;
-their approved contracts remain unchanged.
+The approved interface and QoS contracts remain unchanged.
 
 ## M1.3B cross-language communication design
 
@@ -80,7 +80,7 @@ These packages are M1 contract-verification support components only. They are no
 the future production `sts_ego_state_cpp` implementation. M1.3B includes no
 odometry processing, kinematic derivation, TF2 integration, or scenario logic.
 
-All three M1 packages built, and package checks reported 17 tests, 0 errors,
+At M1.3B, all three M1 packages built, and package checks reported 17 tests, 0 errors,
 0 failures, and 1 tooling skip. The manual runtime check produced repeated Python
 subscriber `PASS canonical EgoState payload` logs. This accepted macOS evidence is
 recorded in the linked engineering reference. M1.4 adds the automated
@@ -90,8 +90,8 @@ cross-process integration test and Linux CI baseline described below.
 
 **Decision status:** **Approved**
 
-**Implementation status:** **In Progress** — integration test implemented and
-verified on macOS; Linux CI workflow implemented, awaiting a GitHub-hosted run.
+**Implementation status:** **Implemented and Linux-CI verified** — the automated
+integration test passed locally on macOS and in GitHub Actions on Ubuntu 24.04.
 
 M1.4 adds an automated cross-language integration test using ROS 2 Jazzy
 `launch_pytest`. It must launch the actual installed executables from the built
@@ -150,10 +150,15 @@ M1 packages, runs all package tests including the launch test with failure
 propagation, and always reports test results verbosely.
 
 Local macOS validation and reproducible commands are recorded in
-[`../TESTING.md`](../TESTING.md). Both Pixi platforms resolve in the regenerated
-lockfile, but no Linux build or runtime execution has been verified locally and
-the workflow has not yet run on GitHub. The overall M1 milestone remains
-**In Progress** pending Linux CI evidence and milestone acceptance.
+[`../TESTING.md`](../TESTING.md). Both Pixi platforms resolve in the tracked
+lockfile. The GitHub Actions **ROS 2 foundation** workflow passed on **Ubuntu
+24.04**, building `sts_interfaces`, `sts_contract_publisher_cpp`, and
+`sts_contract_subscriber_py`: **3 packages finished**. The final CI summary was
+**23 tests, 0 errors, 0 failures, 1 skipped**. The skip is the previously documented
+cppcheck tooling skip. The automated installed C++ publisher → ROS 2 → Python
+subscriber integration test passed on Linux, observing the subscriber's canonical
+payload PASS. With local macOS verification and Linux CI evidence accepted, M1 is
+**Implemented / Accepted**.
 
 ## Required deliverables
 
@@ -172,21 +177,21 @@ match the recorded contracts during implementation.
 
 ## Acceptance criteria
 
-M1 is accepted only when:
+All ten acceptance criteria are satisfied:
 
-1. The selected environment is ROS 2 Jazzy and its supported setup is documented.
-2. The colcon workspace builds cleanly from a documented clean state.
-3. `sts_interfaces` generates the approved first custom message without adding
+1. [x] The selected environment is ROS 2 Jazzy and its supported setup is documented.
+2. [x] The colcon workspace builds cleanly from a documented clean state.
+3. [x] `sts_interfaces` generates the approved first custom message without adding
    unrelated interfaces.
-4. The exact message contract is documented before or with implementation.
-5. A C++ ROS node and a Python ROS node successfully exchange the generated message.
-6. An automated integration test verifies cross-language payload fidelity rather
+4. [x] The exact message contract is documented before or with implementation.
+5. [x] A C++ ROS node and a Python ROS node successfully exchange the generated message.
+6. [x] An automated integration test verifies cross-language payload fidelity rather
    than only checking that both processes start.
-7. Basic C++ and Python tests pass through the workspace test command.
-8. The CI baseline runs the approved build and tests and reports failure correctly.
-9. No additional roadmap packages or runtime capabilities are represented as
+7. [x] Basic C++ and Python tests pass through the workspace test command.
+8. [x] The CI baseline runs the approved build and tests and reports failure correctly.
+9. [x] No additional roadmap packages or runtime capabilities are represented as
    implemented.
-10. Relevant README, milestone, interface, and test status is updated with evidence.
+10. [x] Relevant README, milestone, interface, and test status is updated with evidence.
 
 ## Out of scope
 

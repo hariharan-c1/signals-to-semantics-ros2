@@ -1,27 +1,30 @@
 # M1 ROS 2 Foundation — Engineering Reference
 
-**Coverage:** Completed work through M1.3B; functional verification accepted.
-**Overall milestone:** v0.1 remains In Progress; CI and automated cross-process
-integration testing are not established by this work.
+**Coverage:** Completed work through M1.4 and M1 closure; verification accepted.
+**Overall milestone:** v0.1 Implemented / Accepted, including local macOS
+verification, automated cross-process integration testing, and Ubuntu 24.04 CI.
 
 References: [approved architecture](../DESIGN_SESSION_0_V2.md),
 [M1 task](../tasks/M1_ROS_FOUNDATION.md),
 [interface contract](../ROS_INTERFACE_SPEC.md), and [QoS policy](../QOS.md).
-Those documents retain some earlier implementation-status labels; this note records
-the accepted M1.3B evidence without changing their contracts or architecture.
+This note records the accepted M1.3B and M1.4 evidence without changing their
+contracts or architecture.
 
 ## 1. Milestone purpose
 
 Prove that one approved custom ROS message can be generated, built, published in
-C++, and received and validated in Python on the local Apple M1 Pro. The completed
-path is `sts_contract_publisher_cpp` → `/sts/ego/state` →
+C++, and received and validated in Python on the local Apple M1 Pro and Ubuntu CI.
+The completed path is `sts_contract_publisher_cpp` → `/sts/ego/state` →
 `sts_contract_subscriber_py`, using `sts_interfaces/EgoState`.
 
-All three packages built. Package checks reported **17 tests, 0 errors, 0 failures,
-1 skipped**; cppcheck was skipped by the installed tooling because that version has
+At M1.3B, all three packages built. Package checks reported **17 tests, 0 errors,
+0 failures, 1 skipped**; cppcheck was skipped by the installed tooling because that version has
 known performance issues. Python tests cover canonical acceptance and rejection of
 incorrect fields. The separate manual runtime check produced repeated subscriber
 `PASS canonical EgoState payload` logs and showed one publisher and one subscription.
+M1.4 then added the automated installed-process test, which passed on macOS and
+Linux. Final Ubuntu 24.04 CI reported **3 packages finished** and **23 tests,
+0 errors, 0 failures, 1 skipped**, retaining the documented cppcheck tooling skip.
 These are contract-verification support packages. Production `sts_ego_state_cpp`,
 odometry processing, kinematic derivation, TF2, and scenario logic remain outside
 this completed scope.
@@ -66,7 +69,8 @@ RTE APIs or scheduling guarantees.
 
 Pixi manages the native **RoboStack ROS 2 Jazzy** environment. `pixi.toml` selects
 the `robostack-jazzy` channel, `ros-jazzy-desktop`, `ros-dev-tools`, and platform
-`osx-arm64`; the machine/compiler target is arm64. This is the local macOS stage.
+`osx-arm64`; the machine/compiler target is arm64. M1.4 also adds `linux-64` and
+locks dependencies for both platforms; the local macOS stage remains supported.
 
 Talker/listener verification demonstrated actual `Hello World` publication and
 reception. RViz verification reached OpenGL initialization (OpenGL 2.1/GLSL 1.2);
@@ -79,10 +83,10 @@ This verifies RViz startup, not project-specific visualization or TF behavior.
 | `pixi.lock` | Resolved dependency versions/builds for reproducing the environment; tracked. |
 | `.pixi/` | Local installed environment and generated state; ignored by Git. |
 
-`feat/ros-foundation` holds M1 environment, contract, interface, and node commits.
-At this note's creation, `main`/`origin/main` still point to the architecture
-foundation, while the feature branch and its remote-tracking reference contain
-the M1.3B commit. This keeps milestone work reviewable before integration into main.
+`feat/ros-foundation` holds M1 environment, contract, interface, node, automated
+integration-test, and CI commits. At M1 closure, its history includes the M1.4
+implementation and the step-level runner-temp CI fix. Branch integration into
+`main` is separate from milestone verification and acceptance.
 
 ## 4. M1.2 EgoState v1 contract
 
@@ -208,8 +212,10 @@ explicit, justified absolute/relative tolerances rather than copying this rule.
 
 The `ament_python` package uses `setup.py` for installation and the console entry
 point, an ament resource marker for discovery, and `setup.cfg` to install the script
-under `lib/<package>`. Its five Python checks use `unittest` discovery in the current
-environment; they test validation locally, not the live C++ process.
+under `lib/<package>`. M1.3B's Python checks tested validation locally without the
+live C++ process. M1.4's setuptools `test` extra enables pytest discovery through
+colcon: canonical validation tests, three lint checks, and the launch integration
+test yielded **6 passed** in the local Python suite.
 
 ## 8. macOS linker issue
 
@@ -251,22 +257,166 @@ Environment, interface design, generation, and node work appear as separate comm
 on the feature branch. A clean status means there are no pending reported changes;
 it does not prove runtime correctness.
 
-## 10. Interview recall
+## 10. M1.4 automated integration testing
 
-> I built a minimal ROS 2 Jazzy foundation on Apple Silicon using Pixi and
-> RoboStack. I first specified an EgoState contract with signed longitudinal
-> velocity, acceleration, jerk, a source timestamp, the base_link frame, and
-> explicit validity flags. ROSIDL generates C++ and Python types from one message
-> definition. A C++ node publishes the fixed canonical payload once per second;
-> a Python node validates every field and reports PASS or detailed mismatches.
-> Both endpoints use Reliable, Keep Last depth 10, Volatile QoS. All three packages
-> build, and package tests report zero failures with one tooling skip. I also
-> verified real C++ to Python reception and inspected the ROS graph. I diagnosed
-> a macOS transitive Python dylib startup issue and fixed it with a guarded linker
-> option. This establishes interface compatibility; vehicle processing and the
-> later scenario-intelligence pipeline remain planned.
+### launch_pytest and integration test architecture
 
-## 11. Command cheat sheet
+[`test_ego_state_integration.py`](../../sts_ws/src/sts_contract_subscriber_py/test/test_ego_state_integration.py)
+uses `@launch_pytest.fixture` to supply a `LaunchDescription` and the subscriber
+action. `@pytest.mark.launch` connects the test to that running fixture.
+`launch_pytest` manages the launch lifecycle and output capture within pytest.
+The harness waits for the subscriber's `PASS canonical EgoState payload` on
+stderr; the subscriber owns canonical frame, timestamp, numeric, and validity
+checks. Startup alone cannot pass, and the harness does not copy validation logic.
+
+### Real installed-process launch: ament_index_python and launch_ros
+
+`launch_ros.actions.Node` resolves the two installed executables by package/name
+and launches them as real child processes. This exercises package installation,
+generated types, serialization, DDS/RMW discovery and transport, and Python
+validation. Neither endpoint is mocked or imported into the test process.
+`ament_index_python.packages.get_package_prefix('sts_interfaces')` locates the
+installed interface package through the ament resource index; the macOS workaround
+uses that prefix rather than assuming a particular build-directory layout.
+
+### ROS_DOMAIN_ID and temporary ROS log directory
+
+Both child processes receive the same randomly selected `ROS_DOMAIN_ID` from
+1 through 99. A ROS domain separates discovery/communication from participants
+using other domains; the random choice reduces accidental interference but does
+not guarantee exclusivity. The earlier manual demonstration used domain 73.
+
+The fixture sets `ROS_LOG_DIR` to pytest's writable `tmp_path`, keeping node logs
+temporary and outside repository source. `RCUTILS_LOGGING_USE_STDOUT=0` directs
+ROS logs to stderr, the stream the test explicitly captures. CI also supplies a
+writable runner-temp log path for the test step.
+
+### Bounded timeout and failure behavior
+
+The PASS deadline is **30 seconds**. Missing messages, failed startup, or invalid
+payloads cannot satisfy it; failure includes captured subscriber stderr.
+Each process has **2-second SIGTERM and SIGKILL escalation intervals** for cleanup.
+A temporary local negative check suppressed subscriber INFO logs and shortened
+the deadline to 3 seconds: it failed with exit code 1 after 3.27 seconds and shut
+down both real processes. This demonstrated missing-PASS failure propagation;
+the temporary check was not added to production or the repository test suite.
+
+### macOS DYLD_LIBRARY_PATH test workaround
+
+System shells on macOS can strip `DYLD_*` variables during colcon test activation.
+The fixture's Darwin-only branch restores `<installed sts_interfaces prefix>/lib`
+in the child processes' `DYLD_LIBRARY_PATH`, preserving any existing value.
+This lets generated interface libraries load during the installed-process test.
+Linux uses the ordinary overlay environment. This is separate from M1.3B's
+Apple-only `-dead_strip_dylibs` publisher linker fix.
+
+### pytest compatibility and dependency-stack event-loop warning
+
+Pixi constrains pytest to **`>=8.1,<9`** because Jazzy's installed `launch_testing`
+plugin uses a pytest hook removed in version 9 and fails to load there. The locked
+local validation used pytest 8.4.2 and `launch_pytest` 3.4.11 on Python 3.12.
+
+That dependency stack emits `DeprecationWarning: There is no current event loop`.
+The diagnostic traceback points to `launch_pytest/fixture.py` calling
+`policy.get_event_loop()` before installing its newly created loop with
+`policy.set_event_loop(loop)`. Normal integration execution passes. The warning
+is **not fixed or suppressed**: retaining it makes the upstream compatibility
+issue visible without patching dependencies locally or masking future changes.
+Re-evaluate it when the ROS Jazzy testing stack or Python version changes.
+
+## 11. M1.4 CI architecture and workflow repair
+
+### Checkout, setup-pixi, and the locked environment
+
+The [`ROS 2 foundation` workflow](../../.github/workflows/ros2-ci.yml) runs on a
+GitHub-hosted **Ubuntu 24.04** runner with a **30-minute job timeout**. Its steps
+check out source, install the locked Pixi environment, build the three packages,
+source the installed overlay and run tests, then report results.
+
+`actions/checkout@v7` retrieves repository source, workflow inputs, and the tracked
+`pixi.lock`. `prefix-dev/setup-pixi@v0.10.0` installs Pixi `v0.81.0` and sets up the
+environment with `locked: true` and caching enabled. `pixi run --locked` keeps
+builds/tests tied to the committed platform resolution. CI uses `linux-64`;
+`osx-arm64` remains available for local development. No Docker, CARLA, GPU, or
+S2-S7 runtime is involved.
+
+### Overlay activation and failure propagation
+
+| Workflow element | Purpose |
+| --- | --- |
+| `source install/setup.bash` | Activates generated interface, package, executable, Python, and library discovery from the built workspace overlay inside the test shell. |
+| `set -e` | Stops that Bash script when a command fails, so a failed overlay activation cannot be followed by an apparently successful test command. |
+| `--return-code-on-test-failure` | Makes `colcon test` return failure when tests fail, including a missing canonical PASS in the integration test. |
+| `if: always()` | Runs the result-report step even after build/test failure; the workflow spells this as `if: ${{ always() }}`. It preserves diagnostic visibility without clearing earlier failure. |
+| `colcon test-result --verbose` | Reports the final test counts and detailed recorded results. |
+
+### First 0-second workflow-definition failure
+
+The first CI attempt failed at workflow-definition validation in **0 seconds**:
+`ROS_LOG_DIR: ${{ runner.temp }}/sts_ros_logs` was placed in job-level `env`.
+The `runner` context is not available at that expression location, so GitHub
+rejected the workflow before executing the build or tests. This was a workflow
+definition error, not a ROS build/test failure.
+
+Moving that setting to the test step's `env` fixed the workflow because step-level
+environment expressions can use the assigned runner's `runner.temp` context.
+The fix is recorded in commit `d6985ec` (`fix(ci): use runner temp in step context`).
+The log-directory intent and the ROS interface remained unchanged.
+
+### Final Linux CI evidence and M1 closure
+
+The **ROS 2 foundation** workflow subsequently **passed on Ubuntu 24.04**.
+It built `sts_interfaces`, `sts_contract_publisher_cpp`, and
+`sts_contract_subscriber_py`, reporting **3 packages finished**. The final result
+was **23 tests, 0 errors, 0 failures, 1 skipped**; the skip is the previously
+documented cppcheck tooling skip. The automated installed C++ publisher → ROS 2
+→ Python subscriber integration test passed on Linux.
+
+Together with local macOS build/runtime verification and automated integration
+testing, this satisfies all ten M1 acceptance criteria. M1 / v0.1 is
+**Implemented / Accepted**. Production ego kinematics, TF2 integration, perception,
+CARLA, GAT, LLM runtime, and risk intelligence remain planned; v0.2 is next.
+
+## 12. Final M1 system diagram
+
+```text
+EgoState.msg
+     ↓ ROSIDL
+C++ publisher
+     ↓
+/sts/ego/state
+     ↓
+DDS/RMW
+     ↓
+Python subscriber
+     ↓
+canonical validation
+     ↓
+launch_pytest
+     ↓
+GitHub Actions / Ubuntu
+```
+
+The diagram follows the message path and then its verification layers;
+`launch_pytest` orchestrates and observes the exchange, and GitHub Actions runs
+the build/test workflow.
+
+## 13. 60-second interview explanation of completed M1
+
+> I completed a minimal ROS 2 Jazzy foundation using Pixi and RoboStack on Apple
+> Silicon and Ubuntu CI. I specified EgoState before implementation: signed
+> longitudinal velocity, acceleration and jerk, source timestamp, base_link frame,
+> and explicit validity flags. ROSIDL generates C++ and Python types from that
+> single schema. A C++ publisher sends a canonical payload once per second, and a
+> Python subscriber validates it using Reliable, Keep Last depth 10, Volatile QoS.
+> I automated the real installed-process exchange with launch_pytest: it requires
+> the subscriber's PASS within 30 seconds. I handled macOS library loading and
+> kept dependency warnings visible. Locked GitHub Actions CI on Ubuntu 24.04 built
+> all three packages and reported 23 tests, zero errors or failures, and one known
+> cppcheck tooling skip. M1 proves interface compatibility and regression testing;
+> production vehicle processing and scenario intelligence remain planned.
+
+## 14. Final M1 command cheat sheet
 
 These commands were used and verified in the foundation/review workflow. Run the
 build/test commands from `sts_ws/`; Pixi discovers the parent project manifest.
@@ -275,6 +425,33 @@ build/test commands from `sts_ws/`; Pixi discovers the parent project manifest.
 pixi run colcon build --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py --event-handlers console_stderr-
 pixi run colcon test --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py --event-handlers console_stderr- --return-code-on-test-failure
 pixi run colcon test-result --verbose
+```
+
+M1.4 fresh local build/test commands actually used (from `sts_ws/`):
+
+```sh
+pixi install --locked
+pixi run --locked colcon --log-base log/m1_4 build --build-base build/m1_4 --install-base install/m1_4 --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py
+ROS_LOG_DIR=/tmp/sts_m1_4_ros_logs pixi run --locked bash -c 'set -e; source install/m1_4/setup.bash; colcon --log-base log/m1_4 test --build-base build/m1_4 --install-base install/m1_4 --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py --return-code-on-test-failure --pytest-args -v'
+pixi run --locked colcon test-result --test-result-base build/m1_4 --verbose
+pixi lock --check --offline
+```
+
+Commands executed by the successful Ubuntu CI workflow (from `sts_ws/`);
+the test step supplies `ROS_LOG_DIR` through its step-level environment:
+
+```sh
+pixi run --locked colcon build --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py --event-handlers console_direct+
+pixi run --locked bash -c '
+  set -e
+  source install/setup.bash
+  colcon test \
+    --packages-select sts_interfaces sts_contract_publisher_cpp sts_contract_subscriber_py \
+    --event-handlers console_direct+ \
+    --return-code-on-test-failure \
+    --pytest-args -v
+'
+pixi run --locked colcon test-result --verbose
 ```
 
 For the runtime check, both terminals used ROS domain 73 and a writable temporary

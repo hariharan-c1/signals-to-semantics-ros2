@@ -1,9 +1,9 @@
 # ROS Interface Specification
 
-**Status:** Interface catalogue; `EgoState v1` is **Approved / not yet
-implemented**. Other wire schemas are not yet approved or implemented.
-**Current milestone:** v0.1 has selected the first custom message and must still
-generate, build, and test it across C++ and Python.
+**Status:** Interface catalogue; `EgoState v1` is **Implemented and cross-language
+verified**. Other wire schemas are not yet approved or implemented.
+**Current milestone:** v0.1 is implemented; the first custom message is generated,
+built, and tested across C++ and Python on macOS and Ubuntu 24.04 CI.
 
 This document records the interfaces named by the approved architecture without
 inventing fields, units, or validity rules that have not yet been designed. Before
@@ -42,7 +42,7 @@ fit.
 
 | Interface | Scenario-specific purpose | Status |
 | --- | --- | --- |
-| `EgoState` | Normalized ego state for downstream processing | **Approved / not yet implemented** (v1) |
+| `EgoState` | Normalized ego state for downstream processing | **Implemented and cross-language verified** (v1) |
 | `ActorState` | One normalized tracked or ground-truth actor state | Planned; schema not approved |
 | `ActorStateArray` | Common actor-provider boundary | Planned; schema not approved |
 | `ActorRisk` | Risk quantities for one actor | Planned; schema not approved |
@@ -58,9 +58,9 @@ is frozen below. No field layout is implied for any of the other names above.
 
 ## EgoState v1 approved contract
 
-**Status:** **Approved / not yet implemented**. This status remains in effect until
-the `.msg` file is generated, the workspace builds it successfully, and the
-cross-language contract is tested.
+**Status:** **Implemented and cross-language verified**. The `.msg` file is
+generated and built, and the installed C++ publisher → Python subscriber contract
+exchange passed automated testing on macOS and Ubuntu 24.04 CI.
 
 | Contract item | Approved value |
 | --- | --- |
@@ -130,7 +130,7 @@ test updates; it must not be made silently in a producer or consumer.
 
 | Topic | Intended payload | Status |
 | --- | --- | --- |
-| `/sts/ego/state` | `sts_interfaces/EgoState` | **Approved / not yet implemented** (v1) |
+| `/sts/ego/state` | `sts_interfaces/EgoState` | **Implemented and cross-language verified** (v1) |
 | `/sts/actors/tracked` | `ActorStateArray` | Planned |
 | `/sts/risk/actors` | `ActorRiskArray` | Planned |
 | `/sts/events/braking` | `BrakeEvent` | Planned |

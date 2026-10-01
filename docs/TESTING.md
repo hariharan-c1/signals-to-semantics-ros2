@@ -1,9 +1,9 @@
 # Testing Strategy
 
-**Status:** M1.3B is Implemented and runtime verified on macOS, with package checks
-and a manual cross-language runtime check. M1.4 automated integration testing is
-implemented and verified on macOS; the Linux CI workflow is implemented but has
-not yet run on GitHub. M1.4 and v0.1 remain In Progress pending Linux CI evidence.
+**Status:** M1 / v0.1 is Implemented / Accepted. Local macOS build and runtime
+verification passed, including the M1.4 automated installed-process integration
+test. GitHub Actions `ROS 2 foundation` passed on Ubuntu 24.04, including the
+C++ publisher → Python subscriber integration test.
 
 ## Acceptance philosophy
 
@@ -35,7 +35,7 @@ clock assumptions, frame assumptions, and applicable operating mode.
 
 ## v0.1 test boundary
 
-The current milestone is limited to:
+The completed v0.1 milestone is limited to:
 
 - interface generation/build tests for the first approved custom message;
 - basic C++ node tests;
@@ -61,7 +61,7 @@ cross-process testing or Linux compatibility.
 
 ## M1.4 approved integration-test design
 
-**Status:** **Implemented and verified on macOS**
+**Status:** **Implemented and verified on macOS and Ubuntu 24.04 CI**
 
 Use ROS 2 Jazzy `launch_pytest` to launch the actual installed
 `sts_contract_publisher_cpp/ego_state_test_publisher` C++ executable and
@@ -144,14 +144,27 @@ when the ROS Jazzy testing stack or Python version changes.
 - S2/S3 regression and domain-shift evaluation.
 - GT/perception equivalence at the normalized actor boundary.
 
+## M1.4 Ubuntu CI verification
+
+The GitHub Actions **ROS 2 foundation** workflow passed on **Ubuntu 24.04**.
+Linux CI built `sts_interfaces`, `sts_contract_publisher_cpp`, and
+`sts_contract_subscriber_py`, reporting **3 packages finished**. Its final test
+summary was **23 tests, 0 errors, 0 failures, 1 skipped**. The skip is the
+previously documented cppcheck tooling skip. The automated `launch_pytest` test
+launched the real installed C++ publisher and Python subscriber and passed by
+observing `PASS canonical EgoState payload` within the bounded timeout.
+
+This evidence completes M1's Linux foundation verification. The known dependency
+event-loop warning above remains documented; it was not fixed or suppressed.
+
 ## CI evolution
 
-The approved M1.4 baseline adds Linux CI using GitHub Actions. Implementation must
-retain `osx-arm64` and add `linux-64` in Pixi, update the tracked `pixi.lock` for both
-platforms, and use that repository lockfile in CI without re-resolving dependencies.
-CI must build the ROS workspace, activate its installed overlay, run package tests,
-and run the `launch_pytest` integration test. Build and test failures, including a
-missing subscriber PASS within the bounded timeout, must fail CI.
+The implemented M1.4 baseline runs Linux CI using GitHub Actions. Pixi retains
+`osx-arm64` and adds `linux-64`; the tracked `pixi.lock` resolves both platforms.
+CI uses that repository lockfile without re-resolving dependencies, builds the ROS
+workspace, activates its installed overlay, runs package tests, and runs the
+`launch_pytest` integration test. Build and test failures, including a missing
+subscriber PASS within the bounded timeout, fail CI.
 
 This baseline uses no CARLA, Docker, GPU perception, or S2-S7. It is a
 ROS-foundation portability/regression check, not proof of production Linux/CARLA
@@ -160,7 +173,7 @@ and regenerated lockfile are implemented. The workflow uses GitHub-hosted Ubuntu
 24.04, `actions/checkout@v7`, `prefix-dev/setup-pixi@v0.10.0`, and Pixi `v0.81.0`.
 Locked installation and runs enforce the committed lockfile; caching is enabled.
 The job has a 30-minute timeout, and test results are reported verbosely even after
-failure. No GitHub-hosted Linux run has been verified yet.
+failure. The successful GitHub-hosted Linux run is recorded above.
 
 CI is planned to grow from v0.1 build and basic tests toward formatting, C++ checks,
 Python checks, workspace builds, unit tests, integration smoke tests,

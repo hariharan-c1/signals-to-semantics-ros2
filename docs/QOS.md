@@ -1,7 +1,8 @@
 # QoS Policy
 
-**Status:** Principles approved; the `/sts/ego/state` M1 profile is approved but not
-yet implemented. Other per-topic QoS profiles are not yet finalized or implemented.
+**Status:** Principles approved; the `/sts/ego/state` M1 profile is implemented and
+cross-language verified. Other per-topic QoS profiles are not yet finalized or
+implemented.
 
 QoS must follow data semantics and be validated in tests. Profiles must not be
 selected blindly or copied across every topic.
@@ -22,7 +23,7 @@ selected blindly or copied across every topic.
 | Images, point clouds, high-rate sensor streams | Freshness | Best Effort where appropriate; Keep Last; shallow queue | Exact profile and depth per topic |
 | IMU and odometry | Timely state | Select by source and consumer semantics | Reliability, depth, and loss behavior |
 | `/tf` and `/tf_static` | Transform correctness | Follow established TF2 semantics | Validation with chosen ROS 2 deployment |
-| `/sts/ego/state` | Timely normalized ego state | Reliable; Keep Last; depth 10; Volatile | Implementation and compatibility verification |
+| `/sts/ego/state` | Timely normalized ego state | Reliable; Keep Last; depth 10; Volatile | None for M1: implementation and cross-language compatibility verified on macOS and Ubuntu CI |
 | Normalized actor state | Timely world model | To be specified | Reliability, depth, and late-joiner behavior |
 | Actor risk | Timely physical output | To be specified | Reliability, depth, and overload behavior |
 | Events and frozen scenario windows | Delivery | Reliable and Keep Last direction | Depth, durability, and replay expectations |
@@ -38,7 +39,7 @@ The following profile is part of the approved `EgoState v1` contract:
 
 | Topic | Reliability | History | Depth | Durability | Status |
 | --- | --- | --- | --- | --- | --- |
-| `/sts/ego/state` | Reliable | Keep Last | 10 | Volatile | **Approved / not yet implemented** |
+| `/sts/ego/state` | Reliable | Keep Last | 10 | Volatile | **Implemented and cross-language verified** |
 
 The M1 publisher and subscriber must use compatible QoS settings, and the profile
 must be verified as part of cross-language communication testing before the topic is
