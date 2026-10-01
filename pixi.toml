@@ -2,7 +2,7 @@
 authors = ["Hariharan Chandrasekaran"]
 channels = ["https://prefix.dev/robostack-jazzy"]
 name = "signals-to-semantics-ros2"
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
 
 [tasks]
@@ -10,3 +10,6 @@ version = "0.1.0"
 [dependencies]
 ros-jazzy-desktop = ">=0.11.0,<0.12"
 ros-dev-tools = ">=1.0.3,<2"
+ros2-launch-pytest = ">=3.4.11,<3.5"
+# Jazzy's launch_testing pytest plugin still uses hooks removed in pytest 9.
+pytest = ">=8.1,<9"
