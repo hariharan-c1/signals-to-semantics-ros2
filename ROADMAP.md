@@ -36,10 +36,10 @@ milestone creates no production code or ROS packages.
 
 ### v0.2 — Streaming Vehicle Core — In Progress
 
-M2.0 records the approved streaming design in the
+M2.0/M2.1 record the approved streaming design and specification in the
 [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md) and
 [engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md).
-Production implementation remains Planned; no M2 package is created in M2.0.
+Production implementation remains Planned; no M2 package is created in M2.0/M2.1.
 
 - ego-state processing
 - streaming velocity, acceleration, and jerk

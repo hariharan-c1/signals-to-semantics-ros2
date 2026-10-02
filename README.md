@@ -44,7 +44,7 @@ or immediate storage.
 | State | What it means here |
 | --- | --- |
 | **Implemented** | Approved architecture baseline, M0.1 repository documentation foundation, and v0.1 ROS 2 Foundation: Jazzy environment, colcon workspace, approved `EgoState v1` interface, C++ publisher, Python subscriber, tests, and Ubuntu CI |
-| **In Progress** | v0.2 Streaming Vehicle Core: M2.0 approved design and documentation; production implementation remains Planned |
+| **In Progress** | v0.2 Streaming Vehicle Core: approved M2.0 design and M2.1 specification; production implementation remains Planned |
 | **Planned** | Later milestones: risk intelligence, TF2 and replay, perception, CARLA, S2-S7 integration, diagnostics, Docker, and integrated evaluation |
 
 The three implemented ROS packages are `sts_interfaces`,
@@ -54,7 +54,7 @@ locally on macOS arm64 and in GitHub Actions on Ubuntu 24.04. Linux CI built all
 three packages and reported **23 tests, 0 errors, 0 failures, 1 skipped** (the
 documented cppcheck tooling skip). See the [M1 acceptance record](docs/tasks/M1_ROS_FOUNDATION.md).
 
-These nodes exchange and validate a synthetic canonical payload. M2.0 specifies
+These nodes exchange and validate a synthetic canonical payload. M2.0/M2.1 specify
 production ego kinematics in the [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md)
 and [engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md);
 the production node is not yet implemented. TF2 integration, perception, CARLA,

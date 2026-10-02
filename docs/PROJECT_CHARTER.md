@@ -52,8 +52,8 @@ autonomous-driving stack.
 
 ### In Progress
 
-- v0.2 Streaming Vehicle Core, currently limited to M2.0 approved design and
-  documentation; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+- v0.2 Streaming Vehicle Core, currently limited to approved M2.0 design and M2.1
+  specification; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 
 ### Planned
 

@@ -1,8 +1,9 @@
 # Package Map
 
 **Status:** Target package architecture with the M1 foundation Implemented.
-**Current delivery:** v0.2 Streaming Vehicle Core is In Progress at M2.0 design
-and documentation. Its production packages remain Planned and are not created here.
+**Current delivery:** v0.2 Streaming Vehicle Core is In Progress at approved M2.0
+design and M2.1 specification. Its production packages remain Planned and are not
+created here.
 
 The three implemented M1 packages are `sts_interfaces`,
 `sts_contract_publisher_cpp`, and `sts_contract_subscriber_py`. The latter two are

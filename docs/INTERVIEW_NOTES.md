@@ -48,8 +48,8 @@ history and shared contracts.
 
 - **Implemented:** approved architecture, M0.1 repository foundation, and v0.1 ROS 2
   Foundation; see the [M1 acceptance record](tasks/M1_ROS_FOUNDATION.md).
-- **In Progress:** v0.2 Streaming Vehicle Core at M2.0 approved design and
-  documentation; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+- **In Progress:** v0.2 Streaming Vehicle Core at approved M2.0 design and M2.1
+  specification; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 - **Planned:** M2 runtime implementation and later risk, replay, perception, CARLA,
   AI, semantic, database, retrieval, and mature visualization capabilities.
 

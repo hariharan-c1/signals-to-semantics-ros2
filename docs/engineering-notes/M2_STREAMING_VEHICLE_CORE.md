@@ -1,6 +1,6 @@
 # M2 Streaming Vehicle Core — Engineering Reference
 
-**Coverage:** M2.0 approved design and documentation only.\
+**Coverage:** Approved M2.0 design and M2.1 specification; documentation only.\
 **Overall milestone:** v0.2 In Progress; production implementation and runtime
 verification remain Planned. M1 / v0.1 remains Implemented / Accepted.
 
@@ -14,7 +14,7 @@ References: [M2 task](../tasks/M2_STREAMING_VEHICLE_CORE.md),
 
 The future `sts_ego_state_cpp` node will consume `/vehicle/odometry` as
 `nav_msgs/Odometry` and publish `/sts/ego/state` as the existing `EgoState v1`.
-It is not created in M2.0. Unlike the M1 canonical-payload publisher, a streaming
+It is not created in M2.0/M2.1. Unlike the M1 canonical-payload publisher, a streaming
 estimator needs history: the last accepted source timestamp and velocity, and a
 previous valid acceleration when available. Processing one sample changes the
 reference used by the next accepted sample.
@@ -25,6 +25,31 @@ processing uses only the current sample and accepted past samples. It does not
 look ahead, use a centered difference, or revise an earlier output after a future
 sample arrives. Replayed inputs can still be processed causally; having a recording
 available does not authorize future-data use in the online path.
+
+M2.1 freezes three conceptual estimator states: `EMPTY` has no accepted baseline,
+`HAVE_VELOCITY` has a valid velocity/time baseline, and `HAVE_ACCEL` also has valid
+acceleration history. Successful continuous samples progress through V → V/A →
+V/A/J. Rejected inputs never advance the state. A gap or non-finite acceleration
+returns to `HAVE_VELOCITY`; non-finite jerk keeps `HAVE_ACCEL` because its current
+acceleration remains usable for the next difference.
+
+## Future package boundary
+
+```yaml
+package: sts_ego_state_cpp
+estimator: EgoKinematicsEstimator
+executable: ego_state_node
+ROS node: ego_state
+```
+
+Keep ROS-message handling and pure kinematic estimation separate. The node will
+own message/frame/component validation, subscription and publication, parameter
+validation, and mapping to `EgoState v1`. `EgoKinematicsEstimator` will own the
+numeric history, ordering/gap decisions, derivative calculation and validity
+transitions. Its unit tests can pass ordinary numeric inputs and inspect results
+without DDS discovery, executors, or ROS messages. Integration tests then exercise
+the real ROS boundary separately. These are specified responsibilities, not
+implemented classes, executables, or test code.
 
 ## Source timestamp versus callback time
 
@@ -43,6 +68,19 @@ presence must be represented separately from the numeric timestamp; treating zer
 as an uninitialized sentinel would incorrectly discard the first sample. The M1
 subscriber's nonzero check belongs to its synthetic canonical fixture; it does
 not redefine the M2 source-time contract or require changing M1 evidence.
+
+Validate standard timestamp components before conversion: `sec` is a signed
+32-bit integer and `nanosec` is an integer in `[0, 999999999]`. Reject malformed
+components without normalization, publication, or state mutation. A nanosecond
+component of 1000000000 must not be silently carried into the next second.
+The representation comes from the standard
+[ROS Time message](https://github.com/ros2/rcl_interfaces/blob/jazzy/builtin_interfaces/msg/Time.msg).
+
+Timestamp ordering must be evaluated at nanosecond resolution. Construct integer
+nanoseconds and subtract the previous accepted timestamp before converting a
+positive difference to seconds. Subtracting two large floating-point absolute
+timestamps could erase a 1 ns interval or change an ordering decision. Exact
+timestamp checks do not use the unit-test numeric tolerance.
 
 ## Odometry twist frame semantics and velocity source
 
@@ -98,8 +136,8 @@ t=0.30, v=9.60  -> a=-2.0, j=0.0
 t=0.40, v=9.40  -> a=-2.0, j=0.0
 ```
 
-Assume the required child frame, finite inputs, and a future gap limit that treats
-0.10 s as continuous. Units are s, m/s, m/s², and m/s³. At 0.20 s,
+Assume the required child frame, finite inputs, and `max_sample_gap_s = 0.25`, which
+treats 0.10 s as continuous. Units are s, m/s, m/s², and m/s³. At 0.20 s,
 `(9.80 - 10.00) / 0.10 = -2.0`; the previous acceleration was zero, giving
 `(-2.0 - 0.0) / 0.10 = -20.0`. Constant deceleration thereafter gives zero jerk.
 These values describe the approved mathematics, not executed test evidence.
@@ -116,8 +154,10 @@ compared with the last accepted sample.
 Non-finite longitudinal velocity (NaN or either infinity) is rejected without
 publishing or updating estimator state. It must not contaminate later derivatives.
 Zero time by itself is allowed; a repeated zero after an accepted zero fails the
-`dt <= 0` rule. Malformed timestamp handling beyond these approved cases remains
-to be finalized in M2.1 before implementation.
+`dt <= 0` rule. Wrong or missing `child_frame_id` and malformed timestamp components
+likewise reject the sample with no publication or state/history changes. Validate
+these inputs before state mutation, evaluate ordering before gap handling, and
+handle gaps before calculating derivatives.
 
 ## Stream discontinuity
 
@@ -129,9 +169,28 @@ acceleration; the following one can supply jerk.
 
 This prevents a difference across a long missing interval from being presented
 as a continuous local derivative. The strict condition is `>`, not `>=`.
-`max_sample_gap_s` has no approved value or default in M2.0; M2.1 must choose and
-justify it. Exact Odometry input QoS also remains an M2.1 open decision. Existing
-output QoS stays Reliable, Keep Last, depth 10, Volatile.
+M2.1 resolves the M2.0 open decision: `max_sample_gap_s = 0.25` seconds is the
+approved ROS parameter default. It must be finite and strictly positive; reject
+zero, negative, NaN, and infinite values before use. At the default, 250000000 ns
+is continuous, while 250000001 ns resets derivative history. The limit is a
+continuity decision, not an event threshold. Frame semantics and derivative
+equations must not be configurable.
+
+## Odometry subscription QoS
+
+The approved subscription profile is KEEP_LAST, depth 5, BEST_EFFORT, VOLATILE,
+with deadline/lifespan/liveliness left at defaults. The implementation should use
+the semantics of `rclcpp::SensorDataQoS()`; see the
+[Jazzy declaration](https://github.com/ros2/rclcpp/blob/jazzy/rclcpp/include/rclcpp/qos.hpp)
+and [QoS policy](../QOS.md). Existing output QoS stays Reliable, Keep Last, depth
+10, Volatile.
+
+Odometry is timely streaming state, so freshness is prioritized. A BEST_EFFORT
+subscription can match either a BEST_EFFORT or RELIABLE publisher under ROS 2
+requested/offered reliability rules when other policies are compatible. This
+does not turn delivery into a lossless guarantee. Matching and actual reception
+with both publisher profiles require future integration tests; no M2 runtime QoS
+verification is claimed here.
 
 ## Numerical validity
 
@@ -142,15 +201,54 @@ with a true flag. Consumers must never infer validity from the numeric value.
 
 Finite input velocity and a positive interval do not guarantee finite computed
 derivatives: floating-point differences or division can overflow, and small
-intervals amplify noise. Non-finite results cannot be marked valid. M2.1 must
-finalize numerical edge-case behavior and justified tolerances before production
-implementation, preserving `EgoState v1` semantics. Decimal reference values need
-tolerance-based comparisons; M1's exactly representable fixture values do not
-justify exact equality for calculated derivatives.
+intervals amplify noise. M2.1 freezes these recovery rules:
+
+- Non-finite calculated acceleration: accept and retain the current valid velocity
+  and timestamp as a new baseline, publish V only, discard acceleration history,
+  and transition to `HAVE_VELOCITY`. The next continuous sample can produce A;
+  the following one can produce J.
+- Valid acceleration but non-finite calculated jerk: publish V/A with jerk invalid,
+  retain the current valid acceleration and velocity/time history, and remain
+  `HAVE_ACCEL`. The next sample can produce valid jerk from that acceleration.
+
+Neither case is an input rejection, and both publish one `EgoState`. Never mark a
+non-finite derivative valid or store it as valid acceleration history. There is
+no physical clipping/clamping: a finite extreme value remains finite data, rather
+than being forced into an assumed vehicle envelope.
+
+Deterministic unit tests use absolute tolerance `1e-9` for valid computed numeric
+quantities. Flags, invalid `0.0` placeholders, timestamps, frames, state transitions,
+and publication counts are exact checks. M1's exactly representable canonical
+fixture values do not justify exact equality for ordinary calculated derivatives.
 
 Future verification must check numerical outputs, validity, stamps, frames, and
 publication counts. It must also show that rejected samples leave subsequent
 results unchanged and that gaps restart warm-up. Node startup alone is insufficient.
+
+## Deterministic verification specification
+
+The complete [M2.1 test matrix](../tasks/M2_STREAMING_VEHICLE_CORE.md#m21-deterministic-test-matrix--specified-not-implemented)
+defines inputs and expected outputs for constant velocity/acceleration, braking
+onset, irregular sampling, signed reverse motion, first timestamp zero,
+duplicate/decreasing timestamps, the exact 0.25 s boundary, larger gaps and renewed
+warm-up, NaN/+Inf/-Inf inputs, wrong/missing child frame, rejected-sample history,
+malformed components and nanosecond ordering, non-finite derivatives, callback-delay
+invariance, parameter validation, and both publisher reliability profiles.
+
+Overflow fixtures deliberately use extreme finite float64 values. Powers of two
+and 0.125 s intervals allow exact finite acceleration references and explicit
+overflow, without physical limits or a new numerical tolerance. Compare subsequent
+outputs to verify acceleration-reset recovery and retention after invalid jerk.
+Run rejection cases from all three states and compare later outputs with a control
+stream that omits the rejected sample.
+
+Callback-delay invariance assumes identical source samples arrive in the same
+order. Best Effort loss can change the delivered sequence; it must not be confused
+with using callback time in the derivative equations. Numerical unit tests stay
+independent of transport; ROS integration verifies reception and publication.
+
+All tests remain Planned. This note records no production implementation or
+measured baseline correctness/noise sensitivity.
 
 ## Why filtering follows baseline verification
 
@@ -165,5 +263,5 @@ filtering against the baseline, documenting any causal behavior or explicit fixe
 latency as required by the online/offline contract. No filtering constants or
 performance claims are approved here.
 
-M2.0 specifies no `BrakeEvent` fields or event thresholds, creates no ROS packages
-or production code, and changes neither `EgoState v1` nor M1 evidence.
+M2.0/M2.1 specify no `BrakeEvent` fields or event thresholds, create no ROS packages
+or production code, and change neither `EgoState v1` nor M1 evidence.
