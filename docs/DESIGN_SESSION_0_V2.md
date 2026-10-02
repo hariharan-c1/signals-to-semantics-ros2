@@ -2,7 +2,8 @@
 ## Design Session 0 — Architecture V2.0
 
 **Status:** Approved Architecture  
-**Project stage:** Pre-implementation  
+**Project stage at architecture approval:** Pre-implementation; current delivery
+status is tracked in [`MILESTONES.md`](MILESTONES.md).
 **Repository:** `signals-to-semantics-ros2`
 
 ---

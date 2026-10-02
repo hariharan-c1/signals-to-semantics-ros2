@@ -1,6 +1,8 @@
 # Architecture
 
-**Status:** Derived architecture guide; no runtime system is implemented yet.  
+**Status:** Derived architecture guide; M1 ROS 2 Foundation is Implemented.
+M2 / v0.2 is In Progress at design/documentation; the target production system
+below remains Planned. See [milestones](MILESTONES.md).
 **Authority:** [`DESIGN_SESSION_0_V2.md`](DESIGN_SESSION_0_V2.md) remains the
 authoritative approved architecture if this summary is incomplete or ambiguous.
 

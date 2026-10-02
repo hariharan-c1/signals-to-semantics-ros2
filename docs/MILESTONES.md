@@ -1,8 +1,8 @@
 # Milestones
 
 **Project status:** Active Development  
-**Current milestone:** v0.1 ROS 2 Foundation — Implemented\
-**Next planned milestone:** v0.2 Streaming Vehicle Core
+**Current milestone:** v0.2 Streaming Vehicle Core — In Progress\
+**Next planned milestone:** v0.3 Risk Intelligence
 
 The milestone states distinguish repository evidence from architectural intent.
 
@@ -17,7 +17,7 @@ no production source code, ROS packages, Docker files, checkpoints, or datasets.
 Acceptance criteria are defined in
 [`tasks/M0_REPO_FOUNDATION.md`](tasks/M0_REPO_FOUNDATION.md).
 
-### v0.1 — ROS 2 Foundation
+### v0.1 — ROS 2 Foundation — Implemented
 
 Implemented and accepted: ROS 2 Jazzy environment, colcon workspace, the approved
 `EgoState v1` custom interface in `sts_interfaces`, C++ publisher in
@@ -30,13 +30,23 @@ passed. Linux CI reported **3 packages finished** and **23 tests, 0 errors,
 The execution contract is
 [`tasks/M1_ROS_FOUNDATION.md`](tasks/M1_ROS_FOUNDATION.md).
 
-## Planned
+## In Progress
 
-v0.2 is the next planned milestone; implementation has not started.
+### v0.2 — Streaming Vehicle Core — In Progress
+
+M2.0 documents the approved Odometry-to-EgoState streaming design and engineering
+concepts. Production kinematics, event detection, and rolling temporal state remain
+Planned; no M2 ROS package or production code is implemented by this documentation
+step. Exact input QoS and `max_sample_gap_s` remain M2.1 open decisions.
+
+The execution contract is
+[`tasks/M2_STREAMING_VEHICLE_CORE.md`](tasks/M2_STREAMING_VEHICLE_CORE.md), with the
+[M2 engineering note](engineering-notes/M2_STREAMING_VEHICLE_CORE.md).
+
+## Planned
 
 | Release | Outcome |
 | --- | --- |
-| v0.2 | Streaming ego kinematics, event detection, and rolling temporal state |
 | v0.3 | Actor-relative risk intelligence and initial RViz2 visualization |
 | v0.4 | TF2, rosbag2, frame-aware actor state, and deterministic replay |
 | v0.5 | Image ingestion, pretrained detection, localization, and tracking |

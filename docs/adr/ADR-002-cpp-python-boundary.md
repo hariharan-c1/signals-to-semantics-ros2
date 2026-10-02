@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Decision scope:** Implementation-language boundary
-- **Implementation status:** Planned, with first cross-language proof in v0.1
+- **Implementation status:** M1 cross-language proof Implemented / Accepted; production language boundary Planned, with M2.0 design In Progress
 - **Authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Context

@@ -34,9 +34,11 @@ The authoritative architecture wins until an explicit, reviewed decision changes
 ## Scope and truthfulness
 
 The project is in **Active Development** and the current milestone is
-**v0.1 ROS 2 Foundation**. Distinguish **Implemented**, **In Progress**, and
-**Planned** in code comments, documentation, tests, and reports. Never claim planned
-functionality is operational without implementation and verification evidence.
+**v0.2 Streaming Vehicle Core — In Progress**; v0.1 ROS 2 Foundation is
+**Implemented** and later milestones are **Planned**. Distinguish **Implemented**,
+**In Progress**, and **Planned** in code comments, documentation, tests, and reports.
+Never claim planned functionality is operational without implementation and
+verification evidence.
 
 Implement only the approved task scope. Do not add speculative packages,
 dependencies, Dockerization, datasets, checkpoints, or placeholder production

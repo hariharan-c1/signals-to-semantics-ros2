@@ -2,8 +2,10 @@
 
 **Status:** Interface catalogue; `EgoState v1` is **Implemented and cross-language
 verified**. Other wire schemas are not yet approved or implemented.
-**Current milestone:** v0.1 is implemented; the first custom message is generated,
-built, and tested across C++ and Python on macOS and Ubuntu 24.04 CI.
+**Current milestone:** v0.2 Streaming Vehicle Core — In Progress at M2.0 design
+and documentation; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+v0.1 is Implemented; the first custom message is generated, built, and tested
+across C++ and Python on macOS and Ubuntu 24.04 CI. `EgoState v1` remains unchanged.
 
 This document records the interfaces named by the approved architecture without
 inventing fields, units, or validity rules that have not yet been designed. Before

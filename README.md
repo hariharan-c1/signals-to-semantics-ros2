@@ -1,8 +1,8 @@
 # Signals-to-Semantics ROS 2
 
 **Status:** Active Development  
-**Current milestone:** v0.1 ROS 2 Foundation — Implemented\
-**Next planned milestone:** v0.2 Streaming Vehicle Core\
+**Current milestone:** v0.2 Streaming Vehicle Core — In Progress\
+**Next planned milestone:** v0.3 Risk Intelligence\
 **Implementation state:** Verified ROS 2 foundation with a custom interface and C++ → Python contract communication.
 
 Signals-to-Semantics ROS 2 is a systems extension of the Master's thesis project
@@ -44,7 +44,8 @@ or immediate storage.
 | State | What it means here |
 | --- | --- |
 | **Implemented** | Approved architecture baseline, M0.1 repository documentation foundation, and v0.1 ROS 2 Foundation: Jazzy environment, colcon workspace, approved `EgoState v1` interface, C++ publisher, Python subscriber, tests, and Ubuntu CI |
-| **Planned** | Streaming vehicle core, risk intelligence, TF2 and replay, perception, CARLA, S2-S7 integration, diagnostics, Docker, and integrated evaluation |
+| **In Progress** | v0.2 Streaming Vehicle Core: M2.0 approved design and documentation; production implementation remains Planned |
+| **Planned** | Later milestones: risk intelligence, TF2 and replay, perception, CARLA, S2-S7 integration, diagnostics, Docker, and integrated evaluation |
 
 The three implemented ROS packages are `sts_interfaces`,
 `sts_contract_publisher_cpp`, and `sts_contract_subscriber_py`. C++ → Python
@@ -53,10 +54,12 @@ locally on macOS arm64 and in GitHub Actions on Ubuntu 24.04. Linux CI built all
 three packages and reported **23 tests, 0 errors, 0 failures, 1 skipped** (the
 documented cppcheck tooling skip). See the [M1 acceptance record](docs/tasks/M1_ROS_FOUNDATION.md).
 
-These nodes exchange and validate a synthetic canonical payload. Production ego
-kinematics, TF2 integration, perception, CARLA, GAT, LLM runtime, and risk
-intelligence remain planned. No entry in the planned architecture should be
-interpreted as working software.
+These nodes exchange and validate a synthetic canonical payload. M2.0 specifies
+production ego kinematics in the [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md)
+and [engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md);
+the production node is not yet implemented. TF2 integration, perception, CARLA,
+GAT, LLM runtime, and risk intelligence remain Planned. No entry in the planned
+architecture should be interpreted as working software.
 
 ## Development strategy
 

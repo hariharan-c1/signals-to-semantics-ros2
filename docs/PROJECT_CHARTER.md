@@ -2,7 +2,7 @@
 
 **Project:** Signals-to-Semantics ROS 2  
 **Status:** Active Development  
-**Current milestone:** v0.1 ROS 2 Foundation  
+**Current milestone:** v0.2 Streaming Vehicle Core — In Progress
 **Architecture authority:** [`DESIGN_SESSION_0_V2.md`](DESIGN_SESSION_0_V2.md)
 
 ## Purpose
@@ -46,16 +46,20 @@ autonomous-driving stack.
 
 - Approved architecture baseline.
 - M0.1 repository documentation and governance foundation.
+- v0.1 ROS 2 Foundation: Jazzy environment, colcon workspace, `EgoState v1`, C++
+  publisher, Python subscriber, cross-language tests, and verified Ubuntu CI;
+  see the [M1 acceptance record](tasks/M1_ROS_FOUNDATION.md).
 
 ### In Progress
 
-- v0.1 ROS 2 Foundation, limited to the Jazzy environment, colcon workspace,
-  `sts_interfaces`, one approved custom message, one C++ node, one Python node,
-  cross-language communication, basic tests, and a CI baseline.
+- v0.2 Streaming Vehicle Core, currently limited to M2.0 approved design and
+  documentation; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 
 ### Planned
 
-- Streaming kinematics, risk and event processing, scenario windows, TF2, replay,
+- M2 runtime implementation: streaming kinematics, event detection, and rolling
+  temporal state.
+- Later milestones: risk intelligence, scenario-window integration, TF2, replay,
   perception, CARLA, S2-S7 integration, visualization, diagnostics, Docker, and
   integrated evaluation.
 

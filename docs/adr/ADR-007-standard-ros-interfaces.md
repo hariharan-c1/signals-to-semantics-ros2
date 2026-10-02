@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Decision scope:** ROS message design
-- **Implementation status:** In Progress in v0.1
+- **Implementation status:** M1 custom-interface scope Implemented / Accepted; standard source integrations Planned, with M2.0 Odometry design In Progress
 - **Authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Context

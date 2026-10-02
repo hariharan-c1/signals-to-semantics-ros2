@@ -1,6 +1,7 @@
 # Learning Roadmap
 
-**Status:** M1 foundation learning complete; later milestone learning remains planned.
+**Status:** M1 foundation learning complete; M2 streaming learning In Progress;
+later milestone learning remains Planned.
 
 The project is intended to demonstrate understanding as well as produce software.
 Implementation is not complete until the product owner understands the important
@@ -25,7 +26,9 @@ Completed-work reference through M1 closure:
 
 ## v0.2-v0.4 — Deterministic streaming systems
 
-**Learning status:** Planned; v0.2 is next.
+**Learning status:** v0.2 In Progress at M2.0 streaming design; v0.3-v0.4 Planned.
+Current reference:
+[M2 Streaming Vehicle Core engineering note](engineering-notes/M2_STREAMING_VEHICLE_CORE.md).
 
 - streaming velocity, acceleration, jerk, and rolling state.
 - explicit numerical validity and tolerance-based tests.

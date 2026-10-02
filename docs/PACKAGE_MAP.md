@@ -1,8 +1,14 @@
 # Package Map
 
-**Status:** Planned package architecture. No ROS packages are implemented yet.  
-**Current delivery:** v0.1 introduces only the packages required by the approved
-M1 task after their contracts are finalized.
+**Status:** Target package architecture with the M1 foundation Implemented.
+**Current delivery:** v0.2 Streaming Vehicle Core is In Progress at M2.0 design
+and documentation. Its production packages remain Planned and are not created here.
+
+The three implemented M1 packages are `sts_interfaces`,
+`sts_contract_publisher_cpp`, and `sts_contract_subscriber_py`. The latter two are
+contract-verification support packages, not production ego processing. See the
+[M1 acceptance record](tasks/M1_ROS_FOUNDATION.md) and
+[M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 
 The package names come from the approved architecture. “Primary implementation” is
 derived from the approved C++/Python boundary; entries marked “To be decided” do not
@@ -10,7 +16,7 @@ yet have an approved language or executable layout.
 
 | Package | Intended responsibility | Primary implementation | Earliest roadmap stage | Status |
 | --- | --- | --- | --- | --- |
-| `sts_interfaces` | Scenario-specific ROS message definitions | ROS interface definitions | v0.1 | In Progress |
+| `sts_interfaces` | Scenario-specific ROS message definitions | ROS interface definitions | v0.1 | Implemented: `EgoState v1`; other schemas Planned |
 | `sts_bringup` | System launch and integration entry points | To be decided | v0.1 foundation, expanded later | Planned |
 | `sts_replay` | Recorded-scenario and rosbag2 replay support | To be decided | v0.4 | Planned |
 | `sts_carla_adapter` | Convert CARLA data, including GT actors, to common ROS interfaces | To be decided | v0.6 | Planned |

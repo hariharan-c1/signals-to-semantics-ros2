@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Decision scope:** ROS foundation
-- **Implementation status:** In Progress in v0.1
+- **Implementation status:** Implemented / Accepted in v0.1; see [M1 evidence](../tasks/M1_ROS_FOUNDATION.md)
 - **Authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Context

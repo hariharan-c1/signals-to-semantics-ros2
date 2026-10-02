@@ -10,13 +10,13 @@ individual decisions and their consequences; they do not override that document.
 
 | ADR | Decision | Status |
 | --- | --- | --- |
-| [ADR-001](adr/ADR-001-ros2-jazzy.md) | Use ROS 2 Jazzy as the foundation | Accepted; implementation In Progress |
-| [ADR-002](adr/ADR-002-cpp-python-boundary.md) | Split deterministic streaming work from ML/data work across C++ and Python | Accepted; implementation Planned |
+| [ADR-001](adr/ADR-001-ros2-jazzy.md) | Use ROS 2 Jazzy as the foundation | Accepted; v0.1 Implemented |
+| [ADR-002](adr/ADR-002-cpp-python-boundary.md) | Split deterministic streaming work from ML/data work across C++ and Python | Accepted; M1 cross-language proof Implemented; M2 design In Progress; production boundary Planned |
 | [ADR-003](adr/ADR-003-gt-vs-perception.md) | Support GT and perception actor providers through one common interface | Accepted; implementation Planned |
 | [ADR-004](adr/ADR-004-online-vs-offline.md) | Separate offline-parity and causally valid online modes | Accepted; implementation Planned |
 | [ADR-005](adr/ADR-005-async-llm.md) | Keep LLM reasoning asynchronous and outside physical processing | Accepted; implementation Planned |
 | [ADR-006](adr/ADR-006-remote-carla.md) | Develop on macOS first and run CARLA later in Linux/NVIDIA | Accepted; implementation Planned |
-| [ADR-007](adr/ADR-007-standard-ros-interfaces.md) | Prefer standard ROS interfaces and limit custom messages | Accepted; implementation In Progress |
+| [ADR-007](adr/ADR-007-standard-ros-interfaces.md) | Prefer standard ROS interfaces and limit custom messages | Accepted; M1 custom interface Implemented; M2 Odometry design In Progress; source integrations Planned |
 
 ## Other approved architecture constraints
 

@@ -1,8 +1,9 @@
 # Contributing
 
 Signals-to-Semantics ROS 2 is in **Active Development**. The current milestone is
-**v0.1 ROS 2 Foundation**. Contributions must preserve the traceability and staged
-delivery defined by the approved architecture.
+**v0.2 Streaming Vehicle Core — In Progress**; v0.1 ROS 2 Foundation is
+**Implemented** and later milestones are **Planned**. Contributions must preserve
+the traceability and staged delivery defined by the approved architecture.
 
 ## Before making a change
 
