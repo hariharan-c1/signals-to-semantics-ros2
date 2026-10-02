@@ -1,6 +1,6 @@
 # M2 Streaming Vehicle Core — Engineering Reference
 
-**Coverage:** Approved M2.0 design and M2.1 specification; documentation only.\
+**Coverage:** Approved M2.0/M2.1 specification and M2.2A package/API design; documentation only.\
 **Overall milestone:** v0.2 In Progress; production implementation and runtime
 verification remain Planned. M1 / v0.1 remains Implemented / Accepted.
 
@@ -12,11 +12,11 @@ References: [M2 task](../tasks/M2_STREAMING_VEHICLE_CORE.md),
 
 ## Stateful streaming and causal processing
 
-The future `sts_ego_state_cpp` node will consume `/vehicle/odometry` as
+The future `EgoStateNode` in `sts_ego_state_cpp` will consume `/vehicle/odometry` as
 `nav_msgs/Odometry` and publish `/sts/ego/state` as the existing `EgoState v1`.
-It is not created in M2.0/M2.1. Unlike the M1 canonical-payload publisher, a streaming
-estimator needs history: the last accepted source timestamp and velocity, and a
-previous valid acceleration when available. Processing one sample changes the
+It is not created by these documentation steps. Unlike the M1 canonical-payload
+publisher, a streaming estimator needs history: the last accepted source timestamp
+and velocity, and a previous valid acceleration when available. Processing one sample changes the
 reference used by the next accepted sample.
 
 Stateful does not mean waiting for a completed scenario window. Every otherwise
@@ -33,23 +33,139 @@ V/A/J. Rejected inputs never advance the state. A gap or non-finite acceleration
 returns to `HAVE_VELOCITY`; non-finite jerk keeps `HAVE_ACCEL` because its current
 acceleration remains usable for the next difference.
 
-## Future package boundary
+## M2.2A implementation architecture — planned
+
+```text
+sts_ego_state_cpp
+├── ROS-facing EgoStateNode
+└── ROS-independent EgoKinematicsEstimator
+```
 
 ```yaml
 package: sts_ego_state_cpp
-estimator: EgoKinematicsEstimator
+estimator class: EgoKinematicsEstimator
 executable: ego_state_node
-ROS node: ego_state
+ROS node name: ego_state
 ```
 
-Keep ROS-message handling and pure kinematic estimation separate. The node will
-own message/frame/component validation, subscription and publication, parameter
-validation, and mapping to `EgoState v1`. `EgoKinematicsEstimator` will own the
-numeric history, ordering/gap decisions, derivative calculation and validity
-transitions. Its unit tests can pass ordinary numeric inputs and inspect results
-without DDS discovery, executors, or ROS messages. Integration tests then exercise
-the real ROS boundary separately. These are specified responsibilities, not
-implemented classes, executables, or test code.
+Frozen planned package layout:
+
+```text
+sts_ws/src/sts_ego_state_cpp/
+├── CMakeLists.txt
+├── package.xml
+├── include/sts_ego_state_cpp/ego_kinematics_estimator.hpp
+├── src/ego_kinematics_estimator.cpp
+├── src/ego_state_node.cpp
+└── test/test_ego_kinematics_estimator.cpp
+```
+
+These paths are documentation, not existing package files. `EgoStateNode` handles
+ROS-message contracts, `child_frame_id`, ROS timestamp components, parameter input,
+QoS, publication, source-stamp preservation, output-frame assignment, and
+diagnostics. It rejects invalid frame/component inputs before touching estimator
+history. `EgoKinematicsEstimator` receives `int64_t timestamp_ns` and
+`double velocity_mps` and owns the causal numerical behavior. It must not depend
+on ROS messages, DDS, executors, logging, or frame names. Frame interpretation has
+already been validated by the node; the numerical estimator knows only the agreed
+scalar meaning and units.
+
+Ordering and gap comparison stay in integer nanoseconds. Validate the finite
+positive `max_sample_gap_s` parameter and convert it once when establishing the
+accepted configuration into an integer nanosecond threshold, not for each sample.
+The default is exactly `250000000` ns. A gap is strictly `dt_ns > threshold_ns`;
+an equal delta is continuous. Convert a positive continuous delta to seconds only
+for the unchanged backward finite differences. Conversion must preserve the M2.1
+boundary at nanosecond resolution; this design approves no new rounding/clamping
+policy. Supported integer timestamp arithmetic must avoid overflow.
+
+### `.hpp` versus `.cpp`
+
+The estimator `.hpp` is the header: it declares the API and types callers need to
+compile against. Both the ROS node and numerical tests include that declaration.
+The estimator `.cpp` defines the non-inline numerical implementation, compiled
+and linked into the callers' build. Keeping calculations there avoids copying
+their definitions into every caller. The node `.cpp` contains the ROS adaptation;
+the test `.cpp` contains GoogleTest cases. `CMakeLists.txt` will describe build/test
+targets and `package.xml` package metadata/dependencies. No build metadata or
+source files are created in M2.2A.
+
+### Constructors and `explicit`
+
+A constructor runs when an instance is created and establishes its initial
+invariants. For the estimator, that means accepted configuration is available and
+history is absent (`EMPTY`) before the first update. It does not consume a sample,
+publish, or discover ROS peers. The node constructor initializes its owned
+estimator and ROS endpoints; numerical updates remain a separate operation.
+
+If a constructor can accept one configuration scalar, marking it `explicit`
+prevents that scalar from silently becoming an estimator object through implicit
+conversion or copy-initialization. Deliberate direct construction remains possible.
+This protects against an accidental number-to-estimator conversion; it does not
+perform parameter validation. See the
+[C++ explicit specifier rules](https://eel.is/c++draft/dcl.fct.spec).
+Exact constructor signatures and unnecessary private method names are not frozen.
+
+### `std::optional` and one history object
+
+`std::optional<T>` represents either a contained value or no value. The contained
+value is owned inside the optional; absence does not need a numeric sentinel. See
+the [C++ optional specification](https://eel.is/c++draft/optional.optional).
+
+Use one optional history object containing accepted timestamp, signed velocity,
+and optional previous valid acceleration. Use `std::optional<double>` for
+unavailable acceleration/jerk inside estimator results. A present `0.0` is a valid
+zero; an absent derivative means unavailable. A non-finite derivative must never
+be present as a valid value.
+
+| Stored representation | Derived conceptual state |
+| --- | --- |
+| No history | `EMPTY` |
+| History, no acceleration | `HAVE_VELOCITY` |
+| History with valid acceleration | `HAVE_ACCEL` |
+
+Independent validity booleans or a separately mutable state enum could disagree
+with the data they describe. Deriving state from presence keeps the history and
+conceptual state consistent. No previous jerk needs to be stored: the next jerk
+uses current and previous valid acceleration. A gap or invalid calculated
+acceleration replaces the history with current velocity/time and absent
+acceleration. Invalid jerk retains current velocity/time and current valid
+acceleration, preserving all M2.1 recovery behavior.
+
+### Update outcomes, diagnostics, and ROS mapping
+
+The result distinguishes accepted, accepted-reset, and rejected updates, with
+enough reason information for node diagnostics. Exact enum identifiers and result
+member/private method names may be chosen clearly at implementation time.
+Accepted includes first-sample warm-up, continuous processing, and invalid jerk
+with valid acceleration. Accepted-reset identifies a gap or non-finite calculated
+acceleration: there is output, but derivative history restarts. Rejected has no
+output and leaves history unchanged, including ordering and non-finite velocity
+failures. The estimator returns this information without logging.
+
+The node translates results into the existing wire contract. A present derivative
+becomes its numeric `EgoState` value and a true flag; an absent derivative becomes
+the `0.0` placeholder and false flag. Accepted velocity is valid. Both accepted
+categories publish exactly one message with the source stamp and `base_link` frame;
+rejected results publish nothing. The node uses result reasons for diagnostics,
+including the required warning for `dt <= 0`.
+
+### Ownership and middleware/domain separation
+
+`EgoStateNode` owns its estimator instance and controls its lifetime. No global or
+static estimator state is allowed. Different node instances and unit-test fixtures
+therefore start with independent history; one stream cannot contaminate another
+through shared estimator storage. This describes ownership, not a requirement for
+a particular pointer type or allocation strategy.
+
+Domain logic here is the kinematic calculation and its history/validity contract.
+Middleware logic is message handling, discovery, transport, callbacks, and
+publication. Separating them lets pure GoogleTest/ament tests call numerical
+updates directly, inspect optional outputs and diagnostic outcomes, and verify
+the M2.1 matrix without DDS, executor timing, logging, frames, or ROS graph startup.
+ament integrates the build and tests; it does not make middleware a dependency of
+the estimator. Separate ROS integration tests still verify the node's contracts
+and communication. All classes, package files, and tests remain Planned.
 
 ## Source timestamp versus callback time
 
@@ -80,7 +196,9 @@ Timestamp ordering must be evaluated at nanosecond resolution. Construct integer
 nanoseconds and subtract the previous accepted timestamp before converting a
 positive difference to seconds. Subtracting two large floating-point absolute
 timestamps could erase a 1 ns interval or change an ordering decision. Exact
-timestamp checks do not use the unit-test numeric tolerance.
+timestamp checks do not use the unit-test numeric tolerance. M2.2A also requires
+the positive delta's gap comparison to use the configured integer nanosecond
+threshold before conversion to seconds for derivatives.
 
 ## Odometry twist frame semantics and velocity source
 
@@ -263,5 +381,6 @@ filtering against the baseline, documenting any causal behavior or explicit fixe
 latency as required by the online/offline contract. No filtering constants or
 performance claims are approved here.
 
-M2.0/M2.1 specify no `BrakeEvent` fields or event thresholds, create no ROS packages
-or production code, and change neither `EgoState v1` nor M1 evidence.
+Documentation through M2.2A specifies no `BrakeEvent` fields or event thresholds,
+creates no ROS packages or production code, and changes neither `EgoState v1`
+nor M1 evidence.
