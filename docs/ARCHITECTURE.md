@@ -1,8 +1,9 @@
 # Architecture
 
 **Status:** Derived architecture guide; M1 ROS 2 Foundation is Implemented.
-M2 / v0.2 is In Progress at design/documentation; the target production system
-below remains Planned. See [milestones](MILESTONES.md).
+M2 / v0.2 is In Progress: the M2.2B ego-state package is implemented, built, and
+estimator unit-tested locally; ROS end-to-end verification is pending. The complete
+target system below remains Planned. See [milestones](MILESTONES.md).
 **Authority:** [`DESIGN_SESSION_0_V2.md`](DESIGN_SESSION_0_V2.md) remains the
 authoritative approved architecture if this summary is incomplete or ambiguous.
 

@@ -2,8 +2,8 @@
 
 **Status:** Principles approved; the `/sts/ego/state` M1 profile is implemented and
 cross-language verified. The M2.1 `/vehicle/odometry` subscription profile is
-approved below; its implementation and runtime verification remain
-Planned. Other per-topic profiles remain unfinalized.
+approved below and implemented locally in M2.2B; runtime compatibility verification
+remains pending. Other per-topic profiles remain unfinalized.
 
 QoS must follow data semantics and be validated in tests. Profiles must not be
 selected blindly or copied across every topic.
@@ -23,7 +23,7 @@ selected blindly or copied across every topic.
 | --- | --- | --- | --- |
 | Images, point clouds, high-rate sensor streams | Freshness | Best Effort where appropriate; Keep Last; shallow queue | Exact profile and depth per topic |
 | IMU | Timely state | Select by source and consumer semantics | Reliability, depth, and loss behavior |
-| `/vehicle/odometry` subscription | Timely streaming state; freshness | KEEP_LAST; depth 5; BEST_EFFORT; VOLATILE; remaining policies default | Profile finalized in M2.1; implementation and compatibility tests Planned |
+| `/vehicle/odometry` subscription | Timely streaming state; freshness | KEEP_LAST; depth 5; BEST_EFFORT; VOLATILE; remaining policies default | Implemented locally in M2.2B; runtime compatibility tests pending |
 | `/tf` and `/tf_static` | Transform correctness | Follow established TF2 semantics | Validation with chosen ROS 2 deployment |
 | `/sts/ego/state` | Timely normalized ego state | Reliable; Keep Last; depth 10; Volatile | None for M1: implementation and cross-language compatibility verified on macOS and Ubuntu CI |
 | Normalized actor state | Timely world model | To be specified | Reliability, depth, and late-joiner behavior |
@@ -49,8 +49,8 @@ reported as implemented.
 
 ## Approved M2.1 Odometry subscription profile
 
-**Status:** Approved specification; not yet implemented or runtime verified.
-This is the future `ego_state` node's subscription to `/vehicle/odometry` using
+**Status:** Approved specification; implemented locally in M2.2B; not runtime verified.
+This is the `ego_state` node's subscription to `/vehicle/odometry` using
 `nav_msgs/Odometry`, not a mandate to change the source publisher's QoS.
 
 | Policy | Approved value |
@@ -81,7 +81,7 @@ lossless delivery; see the [ROS 2 Jazzy QoS compatibility documentation](https:/
 Future integration tests must verify endpoint settings and actual reception from
 both publisher profiles, with the other policies held compatible. They must check
 accepted-sample outputs, not only node startup, and must not assume Best Effort is
-lossless. The complete [M2.1 test matrix](tasks/M2_STREAMING_VEHICLE_CORE.md#m21-deterministic-test-matrix--specified-not-implemented)
+lossless. The complete [M2.1 test matrix](tasks/M2_STREAMING_VEHICLE_CORE.md#m21-deterministic-test-matrix)
 also separates callback-delay invariance from delivery loss.
 
 The `/sts/ego/state` output remains Reliable, Keep Last, depth 10, Volatile with

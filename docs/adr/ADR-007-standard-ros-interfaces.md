@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Decision scope:** ROS message design
-- **Implementation status:** M1 custom-interface scope Implemented / Accepted; standard source integrations Planned, with M2.0/M2.1 Odometry design/specification In Progress
+- **Implementation status:** M1 custom-interface scope Implemented / Accepted; M2.2B standard Odometry subscription implemented locally; ROS end-to-end verification pending; other source integrations Planned
 - **Authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Context

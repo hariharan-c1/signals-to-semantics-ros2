@@ -36,15 +36,16 @@ milestone creates no production code or ROS packages.
 
 ### v0.2 — Streaming Vehicle Core — In Progress
 
-M2.0/M2.1 record the approved streaming design and specification in the
+The approved streaming contract and local M2.2B implementation evidence are in the
 [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md) and
 [engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md).
-Production implementation remains Planned; no M2 package is created in M2.0/M2.1.
+`sts_ego_state_cpp` is implemented and built locally, with estimator unit tests
+passed. ROS end-to-end verification remains pending; v0.2 is not complete.
 
-- ego-state processing
-- streaming velocity, acceleration, and jerk
-- event detection
-- rolling temporal state
+- ego-state processing — implemented locally; ROS runtime verification pending
+- streaming velocity, acceleration, and jerk — estimator unit-tested locally
+- event detection — Planned
+- rolling temporal state — Planned
 
 ## Planned releases
 

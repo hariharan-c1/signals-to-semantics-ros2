@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Decision scope:** Implementation-language boundary
-- **Implementation status:** M1 cross-language proof Implemented / Accepted; production language boundary Planned, with M2.0/M2.1 design/specification In Progress
+- **Implementation status:** M1 cross-language proof Implemented / Accepted; M2.2B C++ ego-state package implemented and estimator unit-tested locally; ROS end-to-end verification pending; broader production boundary Planned
 - **Authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Context

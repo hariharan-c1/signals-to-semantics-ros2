@@ -3,7 +3,7 @@
 **Status:** Active Development  
 **Current milestone:** v0.2 Streaming Vehicle Core — In Progress\
 **Next planned milestone:** v0.3 Risk Intelligence\
-**Implementation state:** Verified ROS 2 foundation with a custom interface and C++ → Python contract communication.
+**Implementation state:** Verified M1 ROS 2 foundation; M2.2B ego-state package built and estimator unit-tested locally; ROS end-to-end verification pending.
 
 Signals-to-Semantics ROS 2 is a systems extension of the Master's thesis project
 [Signals-to-Semantics](https://github.com/hariharan-c1/Signals_to_Semantics).
@@ -19,8 +19,9 @@ a planner, controller, or complete autonomous-driving stack.
 
 ## Target system
 
-The following system is the planned architecture beyond the implemented M1
-contract-verification foundation.
+The following system is the target architecture. M1 foundation and the M2.2B
+ego-state package exist at the verification scopes described below; the complete
+production system remains Planned.
 
 ```text
 Recorded AV data / CARLA
@@ -44,22 +45,24 @@ or immediate storage.
 | State | What it means here |
 | --- | --- |
 | **Implemented** | Approved architecture baseline, M0.1 repository documentation foundation, and v0.1 ROS 2 Foundation: Jazzy environment, colcon workspace, approved `EgoState v1` interface, C++ publisher, Python subscriber, tests, and Ubuntu CI |
-| **In Progress** | v0.2 Streaming Vehicle Core: approved M2.0 design and M2.1 specification; production implementation remains Planned |
+| **In Progress** | v0.2 Streaming Vehicle Core: M2.2B `sts_ego_state_cpp` implemented, built, and estimator unit-tested locally; ROS end-to-end verification pending; event detection and rolling temporal state Planned |
 | **Planned** | Later milestones: risk intelligence, TF2 and replay, perception, CARLA, S2-S7 integration, diagnostics, Docker, and integrated evaluation |
 
-The three implemented ROS packages are `sts_interfaces`,
+The three implemented M1 ROS packages are `sts_interfaces`,
 `sts_contract_publisher_cpp`, and `sts_contract_subscriber_py`. C++ → Python
 communication is automatically regression tested with `launch_pytest` and verified
 locally on macOS arm64 and in GitHub Actions on Ubuntu 24.04. Linux CI built all
 three packages and reported **23 tests, 0 errors, 0 failures, 1 skipped** (the
 documented cppcheck tooling skip). See the [M1 acceptance record](docs/tasks/M1_ROS_FOUNDATION.md).
 
-These nodes exchange and validate a synthetic canonical payload. M2.0/M2.1 specify
-production ego kinematics in the [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md)
-and [engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md);
-the production node is not yet implemented. TF2 integration, perception, CARLA,
-GAT, LLM runtime, and risk intelligence remain Planned. No entry in the planned
-architecture should be interpreted as working software.
+Those M1 nodes exchange and validate a synthetic canonical payload. M2.2B adds
+`sts_ego_state_cpp`, containing `EgoKinematicsEstimator` and `EgoStateNode`, following
+the [M2 task](docs/tasks/M2_STREAMING_VEHICLE_CORE.md) and
+[engineering note](docs/engineering-notes/M2_STREAMING_VEHICLE_CORE.md). The package
+has local build and estimator unit evidence; ROS end-to-end runtime/integration
+verification remains pending. Event detection, rolling temporal state, TF2,
+perception, CARLA, GAT, LLM runtime, and risk intelligence remain Planned. Local M2
+unit evidence does not establish full v0.2 acceptance or Linux runtime verification.
 
 ## Development strategy
 

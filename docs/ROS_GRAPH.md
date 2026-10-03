@@ -3,12 +3,14 @@
 **Status:** Target conceptual graph beyond the Implemented M1 contract exchange.
 M1 implements `sts_contract_publisher_cpp` → `/sts/ego/state` (`EgoState v1`) →
 `sts_contract_subscriber_py`; see the [M1 task](tasks/M1_ROS_FOUNDATION.md).
-M2 / v0.2 is In Progress at design/documentation; the production streaming path
-below remains Planned. See the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+M2 / v0.2 is In Progress. `sts_ego_state_cpp` implements the Odometry-to-EgoState
+node locally, with build and pure estimator unit evidence; ROS end-to-end graph
+verification is pending. Other production nodes remain Planned. See the
+[M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 
-The graph below describes functional boundaries and planned topics. It does not
-assign final executable names, process composition, launch structure, or one-to-one
-node mappings; those remain milestone-level design decisions.
+The graph below describes target functional boundaries and topics. The M2 task
+fixes the ego-state executable/node names; other executable names, process
+composition, launch structure, and node mappings remain milestone-level decisions.
 
 ## Continuous path
 

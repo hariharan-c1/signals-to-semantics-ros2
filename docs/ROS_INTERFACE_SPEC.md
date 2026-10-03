@@ -2,8 +2,9 @@
 
 **Status:** Interface catalogue; `EgoState v1` is **Implemented and cross-language
 verified**. Other wire schemas are not yet approved or implemented.
-**Current milestone:** v0.2 Streaming Vehicle Core — In Progress at approved M2.0
-design and M2.1 specification; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+**Current milestone:** v0.2 Streaming Vehicle Core — In Progress; M2.2B ego-state
+package implemented and estimator unit-tested locally, with ROS end-to-end
+verification pending; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 v0.1 is Implemented; the first custom message is generated, built, and tested
 across C++ and Python on macOS and Ubuntu 24.04 CI. `EgoState v1` remains unchanged.
 
@@ -32,7 +33,7 @@ linked specification.
 | `/camera/front/camera_info` | `sensor_msgs/CameraInfo` | Camera calibration | Planned |
 | `/lidar/points` | `sensor_msgs/PointCloud2` | LiDAR/depth point data | Planned |
 | `/imu/data` | `sensor_msgs/Imu` | Inertial measurements | Planned |
-| `/vehicle/odometry` | `nav_msgs/Odometry` | Ego odometry | Planned |
+| `/vehicle/odometry` | `nav_msgs/Odometry` | Ego odometry | M2.2B subscription implemented locally; source/end-to-end verification pending |
 | `/tf` | Standard TF2 transform messages | Dynamic transforms | Planned |
 | `/tf_static` | Standard TF2 transform messages | Static transforms | Planned |
 

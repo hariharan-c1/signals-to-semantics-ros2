@@ -26,7 +26,8 @@ Completed-work reference through M1 closure:
 
 ## v0.2-v0.4 — Deterministic streaming systems
 
-**Learning status:** v0.2 In Progress at M2.0 streaming design and M2.1 specification;
+**Learning status:** v0.2 In Progress through M2.2B local ego-state implementation
+and estimator unit verification; ROS integration learning remains pending.
 v0.3-v0.4 Planned.
 Current reference:
 [M2 Streaming Vehicle Core engineering note](engineering-notes/M2_STREAMING_VEHICLE_CORE.md).

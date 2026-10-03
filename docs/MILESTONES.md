@@ -34,12 +34,12 @@ The execution contract is
 
 ### v0.2 — Streaming Vehicle Core — In Progress
 
-M2.0/M2.1 document the approved Odometry-to-EgoState streaming design, specification,
-and engineering concepts. Production kinematics, event detection, and rolling
-temporal state remain Planned; no M2 ROS package or production code is implemented
-by this documentation step. M2.1 finalizes the SensorDataQoS input profile, default
-`max_sample_gap_s = 0.25`, estimator transitions, numerical recovery, and
-deterministic test matrix.
+M2.0/M2.1 established the Odometry-to-EgoState specification, and M2.2A approved
+the package/API design. M2.2B `sts_ego_state_cpp` is implemented locally with
+`EgoKinematicsEstimator` and `EgoStateNode`; selected-package build and estimator
+unit tests have passed. ROS end-to-end runtime/integration verification remains
+pending. Event detection and rolling temporal state remain Planned and are not
+implemented. Local unit evidence does not complete v0.2 acceptance.
 
 The execution contract is
 [`tasks/M2_STREAMING_VEHICLE_CORE.md`](tasks/M2_STREAMING_VEHICLE_CORE.md), with the

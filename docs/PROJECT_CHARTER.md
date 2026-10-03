@@ -52,13 +52,14 @@ autonomous-driving stack.
 
 ### In Progress
 
-- v0.2 Streaming Vehicle Core, currently limited to approved M2.0 design and M2.1
-  specification; see the [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
+- v0.2 Streaming Vehicle Core: M2.2B ego-state package implemented, built, and
+  estimator unit-tested locally; ROS end-to-end verification pending. See the
+  [M2 task](tasks/M2_STREAMING_VEHICLE_CORE.md).
 
 ### Planned
 
-- M2 runtime implementation: streaming kinematics, event detection, and rolling
-  temporal state.
+- M2 event detection and rolling temporal state; complete streaming-path acceptance
+  awaits ROS runtime/integration verification.
 - Later milestones: risk intelligence, scenario-window integration, TF2, replay,
   perception, CARLA, S2-S7 integration, visualization, diagnostics, Docker, and
   integrated evaluation.

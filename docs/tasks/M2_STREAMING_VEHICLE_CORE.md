@@ -1,18 +1,19 @@
 # M2 — Streaming Vehicle Core
 
-**Status:** In Progress — approved M2.0/M2.1 specification and M2.2A package/API design; runtime implementation remains Planned.\
+**Status:** In Progress — M2.2B `sts_ego_state_cpp` implemented and built locally; estimator unit verification recorded below; ROS end-to-end verification pending.\
 **Release:** v0.2 Streaming Vehicle Core\
 **Branch:** `feat/streaming-vehicle-core`\
 **Architecture authority:** [`../DESIGN_SESSION_0_V2.md`](../DESIGN_SESSION_0_V2.md)
 
 ## Objective and delivery boundary
 
-Specify the deterministic, causal conversion of an ego odometry stream into the
-existing `EgoState v1` contract before implementing the production node.
-M2.0, M2.1, and M2.2A are documentation-only: this task and the
+Implement the approved deterministic, causal conversion of an ego odometry stream
+into the existing `EgoState v1` contract, with separate numerical and ROS verification.
+M2.0, M2.1, and M2.2A were documentation-only: this task and the
 [engineering note](../engineering-notes/M2_STREAMING_VEHICLE_CORE.md) record the
-approved decisions and future verification requirements. They do not establish
-runtime or numerical test evidence.
+approved decisions and verification requirements. Those documentation steps did
+not establish test evidence. M2.2B now provides local implementation and estimator
+unit evidence; it does not establish ROS end-to-end runtime acceptance.
 
 M1 / v0.1 ROS 2 Foundation is **Implemented / Accepted**; its contracts and
 [evidence](../engineering-notes/M1_ROS2_FOUNDATION.md) remain unchanged. M2 / v0.2
@@ -32,7 +33,7 @@ Relevant decisions: [ADR-002](../adr/ADR-002-cpp-python-boundary.md),
 | --- | --- |
 | Input topic | `/vehicle/odometry` |
 | Input type | `nav_msgs/Odometry` |
-| Future production package / node | `sts_ego_state_cpp`, C++ / `rclcpp`; ROS node `ego_state`; not created in these documentation steps |
+| Production package / node | `sts_ego_state_cpp`, C++ / `rclcpp`; ROS node `ego_state`; implemented locally in M2.2B; ROS end-to-end verification pending |
 | Primary longitudinal velocity source | `twist.twist.linear.x`, signed m/s |
 | Required twist frame | `child_frame_id == "base_link"` before interpreting `linear.x` as ego longitudinal velocity |
 | Pose | `nav_msgs/Odometry.pose` is intentionally not used to reconstruct velocity in M2 |
@@ -75,7 +76,7 @@ values before they can be used. The discontinuity comparison is strictly `>`;
 an exact 0.25 s interval is continuous with the default parameter. Frame semantics
 and derivative equations are fixed contracts, not configurable parameters.
 
-## M2.2A approved package/API design — not implemented
+## M2.2A approved package/API design — implemented locally in M2.2B
 
 ```text
 sts_ego_state_cpp
@@ -90,7 +91,7 @@ executable: ego_state_node
 ROS node name: ego_state
 ```
 
-Frozen planned layout (paths are specifications, not files created here):
+Frozen layout, now present in the M2.2B package:
 
 ```text
 sts_ws/src/sts_ego_state_cpp/
@@ -165,9 +166,9 @@ optionals to numeric fields with true validity flags, and absent optionals to
 produce no ROS publication. The existing source stamp, `base_link` frame, units,
 field order, and QoS contract remain unchanged.
 
-### Planned testing and implementation discretion
+### Testing boundary and implementation discretion
 
-Pure estimator logic will be tested with GoogleTest through ament, using
+Pure estimator logic is tested with GoogleTest through ament, using
 `test/test_ego_kinematics_estimator.cpp`. Unit tests must link only what is needed
 for the ROS-independent estimator and test harness; they require no DDS, ROS graph
 startup, ROS messages, or executor. ament supplies build/test integration, not a
@@ -275,11 +276,12 @@ t=0.30, v=9.60  -> a=-2.0, j=0.0
 t=0.40, v=9.40  -> a=-2.0, j=0.0
 ```
 
-These are mathematical reference values, not executed test results. Future tests
-must compare valid computed values using absolute tolerance `1e-9`, and check
-timestamps, frames, validity flags, publication counts, and history behavior.
+These are the approved mathematical reference values. M2.2B unit tests compare
+computed outputs against them using absolute tolerance `1e-9`, with exact checks
+of timestamps and optional presence. ROS frame, validity-flag, and publication-count
+verification remains pending.
 
-## M2.1 deterministic test matrix — specified, not implemented
+## M2.1 deterministic test matrix
 
 Unless stated otherwise, each row starts with `EMPTY`, required `base_link` child
 frame, default gap parameter `0.25`, and canonical source timestamps. `(t,v)` pairs
@@ -289,7 +291,9 @@ optional presence, exact nanosecond timestamps, update outcomes, and history
 transitions. Node-boundary tests check numeric placeholders, validity flags,
 exact source stamps, output frame, and publication count. Frame and ROS component
 validation cases belong to that boundary, not to the scalar estimator API.
-All cases below are future acceptance requirements, not executed evidence.
+This matrix remains the approved acceptance contract. M2.2B implements estimator
+unit cases; ROS boundary and integration cases remain pending. Executed local
+evidence is recorded separately below.
 
 | Case / test layer | Deterministic input or stimulus | Expected result |
 | --- | --- | --- |
@@ -357,7 +361,41 @@ Those M2.0 open decisions are resolved by the approved M2.1 specification above.
   ownership without freezing unnecessary implementation details.
 - [x] Preserve M2.1 numerical behavior and create no runtime files.
 
-Documentation completion through M2.2A does not mean that M2 runtime acceptance
-criteria have passed. Do not create `sts_ego_state_cpp`, change `EgoState v1`, alter M1
-evidence, stage files, or commit as part of this task. Run `git diff --check` and
-report changed files and any conflicts found.
+Documentation completion through M2.2A did not mean that M2 runtime acceptance
+criteria had passed. Package creation was separately authorized for M2.2B.
+`EgoState v1`, approved numerical behavior, and M1 evidence remain unchanged.
+
+## M2.2B local implementation and verification
+
+`sts_ego_state_cpp` now contains the ROS-independent `EgoKinematicsEstimator`,
+ROS-facing `EgoStateNode`, executable `ego_state_node`, package/build metadata,
+and pure GoogleTest/ament estimator tests. ROS end-to-end runtime/integration
+verification remains pending; v0.2 remains **In Progress**. Event detection and
+rolling temporal state remain **Planned** and are not implemented by this package.
+
+Before hardening, **30 estimator GoogleTest cases passed locally**. Five ament
+lint tools executed successfully: copyright, cpplint, CMake lint, uncrustify, and
+XML lint. The installed cppcheck tooling skipped its four M2 file checks because
+cppcheck 2.22.0 has known performance issues. The aggregate workspace count also
+contained historical M1 result files; it was not a count of M2 estimator tests.
+
+The pre-commit hardening adds an acceleration-overflow case starting in
+`HAVE_ACCEL`, adds the requested nonzero jerk case with 0.10/0.20 s intervals,
+and completes division-overflow warm-up recovery. All numeric assertions retain
+absolute tolerance `1e-9`; no production behavior changes are included.
+After hardening, **32 estimator GoogleTest cases passed locally** on 2026-10-02
+(macOS arm64), with zero estimator errors/failures/skips. The selected build
+finished both `sts_interfaces` and `sts_ego_state_cpp` successfully. The package
+test run completed seven CTest entries without failure; five lint tools executed
+successfully and cppcheck again skipped four file checks.
+
+The package-only result report contains **57 records**, comprising seven CTest
+wrappers, 32 estimator cases, and 18 lint file/check records: zero errors, zero
+failures, four cppcheck skips. This count excludes historical M1 results and is
+not a count of 57 distinct numerical tests. The ROS boundary/integration rows of
+the M2.1 matrix remain pending; no M2 Linux or end-to-end runtime result is claimed.
+
+RoboStack/macOS incremental interface installation emitted `install_name_tool`
+RPATH/signature diagnostics while colcon returned build success. This is an
+environment observation, not evidence of a functional estimator failure. M2 ROS
+runtime acceptance is not inferred from a successful build or pure unit tests.
